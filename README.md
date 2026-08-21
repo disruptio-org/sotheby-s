@@ -110,8 +110,8 @@ unless changed). The seed prints it on every run.
 | Account | Role | Sees |
 | --- | --- | --- |
 | `mariana.costa@sothebysrealty.pt` | Administrador | Everything |
-| `tiago.mendes@sothebysrealty.pt` | Gestor de Operações de IA | Platform, no administration |
-| `sofia.almeida@sothebysrealty.pt` | Consultor | Read-only, plus running workflows |
+| `duarte.almeida@sothebysrealty.pt` | Gestor de Operações de IA | Platform, no administration |
+| `sofia.mendes@sothebysrealty.pt` | Consultor | Read-only view of agents, skills and workflows |
 | `ricardo.faria@sothebysrealty.pt` | Consultor | Invited — has no password until one is generated |
 
 An invited user gets access when an administrator uses **Gerar acesso** on the

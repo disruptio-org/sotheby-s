@@ -1,4 +1,4 @@
-import { MODEL_BY_ID, runCreateSchema, type RunEvent } from '@sothebys/domain';
+import { MODEL_BY_ID, PROVIDER_NAME, runCreateSchema, type RunEvent } from '@sothebys/domain';
 import type { FastifyInstance } from 'fastify';
 import { agentUsage, platformSpendCents, usageOf } from '../billing.js';
 import { prisma } from '../db.js';
@@ -42,7 +42,7 @@ export const runRoutes = async (app: FastifyInstance): Promise<void> => {
       const keys = await keyStatus();
       if (!keys[spec.provider]) {
         throw unprocessable(
-          `Sem chave de API para ${spec.provider}. Configure-a em Definições antes de executar.`,
+          `Sem chave de API para ${PROVIDER_NAME[spec.provider]}. Configure-a em Definições antes de executar.`,
         );
       }
     }

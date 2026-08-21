@@ -1,4 +1,4 @@
-import { MODEL_BY_ID, costOfCall, type ProviderId } from '@sothebys/domain';
+import { MODEL_BY_ID, PROVIDER_NAME, costOfCall, type ProviderId } from '@sothebys/domain';
 import { platformSpendCents } from '../billing.js';
 import { prisma } from '../db.js';
 import { env } from '../env.js';
@@ -66,7 +66,7 @@ const resolveProvider = async (
 
   const apiKey = await keyFor(spec.provider);
   if (!apiKey) {
-    throw new Error(`Sem chave de API configurada para ${spec.provider}. Defina-a em Definições.`);
+    throw new Error(`Sem chave de API configurada para ${PROVIDER_NAME[spec.provider]}. Defina-a em Definições.`);
   }
   return { provider: providerFor(spec.provider), apiKey, providerId: spec.provider };
 };

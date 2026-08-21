@@ -89,7 +89,8 @@ export function SettingsScreen() {
               <button
                 type="button"
                 className="btn btn--outline"
-                disabled={settingsBusy}
+                // Empty field with no key on file is a no-op, not a removal.
+                disabled={settingsBusy || (!settingsDraft.key.trim() && !keyConfigured)}
                 onClick={() => void actions.saveKey()}
               >
                 {settingsDraft.key.trim() ? 'Guardar' : 'Remover'}
