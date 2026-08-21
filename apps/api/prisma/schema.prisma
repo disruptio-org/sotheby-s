@@ -1,0 +1,268 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Roles carry a permission map keyed `section.action`; `system` roles hold
+/// every permission and are never editable or deletable.
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  desc        String   @default("")
+  system      Boolean  @default(false)
+  permissions Json     @default("{}")
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum UserStatus {
+  ACTIVE
+  INVITED
+  SUSPENDED
+}
+
+model User {
+  id           Int        @id @default(autoincrement())
+  name         String
+  email        String     @unique
+  /// Null until the invitee sets a password.
+  passwordHash String?
+  roleId       Int
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  status       UserStatus @default(INVITED)
+  lastLoginAt  DateTime?
+  sessions     Session[]
+  runs         Run[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([roleId])
+}
+
+/// Server-side sessions: the cookie carries only this opaque id, so revoking
+/// access is a row delete.
+model Session {
+  id        String   @id
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userAgent String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+enum SkillCategory {
+  CONTENT
+  ANALYSIS
+  CRM
+  COMMUNICATION
+  MEDIA
+  LEGAL
+}
+
+model Skill {
+  id        Int            @id @default(autoincrement())
+  name      String
+  cat       SkillCategory
+  desc      String         @default("")
+  /// The instruction prompt the executing agent runs for this step.
+  instr     String         @default("")
+  agents    AgentSkill[]
+  steps     WorkflowStep[]
+  runSteps  RunStep[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+enum AgentStatus {
+  ACTIVE
+  PAUSED
+}
+
+model Agent {
+  id               Int              @id @default(autoincrement())
+  name             String
+  /// Provider model id, e.g. `claude-sonnet-4-5`.
+  model            String
+  temp             Float            @default(0.7)
+  status           AgentStatus      @default(ACTIVE)
+  desc             String           @default("")
+  prompt           String           @default("")
+  /// Monthly ceilings; 0 means unlimited.
+  limitRuns        Int              @default(0)
+  limitBudgetCents Int              @default(0)
+  skills           AgentSkill[]
+  knowledge        AgentKnowledge[]
+  tools            AgentTool[]
+  workflows        Workflow[]
+  runs             Run[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+model AgentSkill {
+  agentId Int
+  skillId Int
+  agent   Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  skill   Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([agentId, skillId])
+  @@index([skillId])
+}
+
+model KnowledgeFile {
+  id        Int              @id @default(autoincrement())
+  name      String
+  agents    AgentKnowledge[]
+  createdAt DateTime         @default(now())
+}
+
+model AgentKnowledge {
+  agentId         Int
+  knowledgeFileId Int
+  agent           Agent         @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  knowledgeFile   KnowledgeFile @relation(fields: [knowledgeFileId], references: [id], onDelete: Cascade)
+
+  @@id([agentId, knowledgeFileId])
+  @@index([knowledgeFileId])
+}
+
+model ToolIntegration {
+  id        Int         @id @default(autoincrement())
+  name      String
+  agents    AgentTool[]
+  createdAt DateTime    @default(now())
+}
+
+model AgentTool {
+  agentId Int
+  toolId  Int
+  agent   Agent           @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  tool    ToolIntegration @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  @@id([agentId, toolId])
+  @@index([toolId])
+}
+
+model Workflow {
+  id        Int            @id @default(autoincrement())
+  name      String
+  agentId   Int
+  agent     Agent          @relation(fields: [agentId], references: [id], onDelete: Restrict)
+  steps     WorkflowStep[]
+  runs      Run[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([agentId])
+}
+
+model WorkflowStep {
+  id         Int      @id @default(autoincrement())
+  workflowId Int
+  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  skillId    Int
+  skill      Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  /// Zero-based position in the sequence.
+  index      Int
+
+  @@unique([workflowId, index])
+  @@index([skillId])
+}
+
+enum RunStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELED
+}
+
+enum RunStepStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  FAILED
+  SKIPPED
+}
+
+/// A run is the billing record for a workflow execution. It outlives the
+/// workflow, agent and user it came from — hence the nullable links and the
+/// denormalised names.
+model Run {
+  id           Int       @id @default(autoincrement())
+  workflowId   Int?
+  workflow     Workflow? @relation(fields: [workflowId], references: [id], onDelete: SetNull)
+  workflowName String
+  agentId      Int?
+  agent        Agent?    @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  agentName    String
+  startedById  Int?
+  startedBy    User?     @relation(fields: [startedById], references: [id], onDelete: SetNull)
+  status       RunStatus @default(QUEUED)
+  input        String    @default("")
+  model        String
+  tokensIn     Int       @default(0)
+  tokensOut    Int       @default(0)
+  costCents    Int       @default(0)
+  error        String?
+  steps        RunStep[]
+  createdAt    DateTime  @default(now())
+  startedAt    DateTime?
+  finishedAt   DateTime?
+
+  @@index([workflowId])
+  @@index([agentId])
+  @@index([createdAt])
+}
+
+model RunStep {
+  id         Int           @id @default(autoincrement())
+  runId      Int
+  run        Run           @relation(fields: [runId], references: [id], onDelete: Cascade)
+  index      Int
+  skillId    Int?
+  skill      Skill?        @relation(fields: [skillId], references: [id], onDelete: SetNull)
+  skillName  String
+  status     RunStepStatus @default(PENDING)
+  output     String?
+  error      String?
+  tokensIn   Int           @default(0)
+  tokensOut  Int           @default(0)
+  costCents  Int           @default(0)
+  startedAt  DateTime?
+  finishedAt DateTime?
+
+  @@unique([runId, index])
+  @@index([skillId])
+}
+
+/// Single-row table holding platform defaults.
+model Settings {
+  id          Int      @id @default(1)
+  provider    String   @default("anthropic")
+  model       String   @default("claude-sonnet-4-5")
+  budgetCents Int      @default(75000)
+  alertPct    Int      @default(80)
+  hardStop    Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
+}
+
+/// Provider API keys, encrypted with AES-256-GCM. Ciphertext never leaves the
+/// server — the client only learns whether a key is on file.
+model ProviderKey {
+  provider   String   @id
+  ciphertext String
+  iv         String
+  tag        String
+  /// Last 4 characters of the plaintext, for a recognisable hint in the UI.
+  hint       String   @default("")
+  updatedAt  DateTime @updatedAt
+}

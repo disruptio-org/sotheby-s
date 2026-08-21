@@ -1,103 +1,161 @@
-# Sotheby's · AI Back Office
+# Sotheby's International Realty · AI Back Office
 
-Implementation of the Claude Design prototype [`Sothebys AI Back Office.dc.html`](design/Sothebys%20AI%20Back%20Office.dc.html)
-as a real React application. The original design file and the `support.js` runtime it imports are
-kept under [`design/`](design/) as the reference source of truth.
+Internal platform for building, sequencing and running the AI agents behind the
+client experience. Agents hold a model and a system prompt, skills are the
+reusable capabilities, and workflows chain skills into an end-to-end run that a
+real provider executes.
 
-The back office lets an operations team manage AI **agents**, reusable **skills**, multi-step
-**workflows**, connected **apps**, **users**, **roles & permissions**, and LLM provider **settings**.
-The whole interface is in Portuguese (pt-PT), exactly as designed.
+Interface copy is European Portuguese throughout.
 
-## Stack
+## Layout
 
-- **Vite 5** + **React 18** + **TypeScript 5.6** (strict, including `noUncheckedIndexedAccess` and
-  `exactOptionalPropertyTypes`; project references split app and node configs)
-- No UI framework and no CSS-in-JS — plain CSS with design tokens in `src/styles/tokens.css`
-- No backend: all data is seeded in memory (see *Data* below)
+```
+packages/domain   Shared vocabulary — DTOs, permission catalogue, zod schemas,
+                  model/pricing tables. Imported by both the API and the web app,
+                  so the two can never drift.
+apps/api          Fastify + Prisma + PostgreSQL. Sessions, RBAC, run queue,
+                  provider adapters, SSE progress stream.
+apps/web          React + Vite single-page app.
+```
+
+Two conventions run through the whole codebase:
+
+- **Money is always integer cents.** Nothing stores or passes euros as a float.
+- **Enum values are canonical UPPERCASE** in the database and on the wire
+  (`ACTIVE`, `SUCCEEDED`, `CONTENT`). The Portuguese labels live in
+  `packages/domain/src/catalogs.ts` and are applied only at render time.
 
 ## Getting started
+
+Requires Node 20.11 or newer and a PostgreSQL database.
+
+### 1. Install
 
 ```bash
 npm install
 ```
 
+### 2. Point at a database
+
+Either run Postgres locally with the bundled compose file:
+
+```bash
+npm run db:up
+```
+
+…which listens on **5433** (not 5432, so it will not clash with an existing
+local Postgres), or use a hosted database such as [Neon](https://neon.tech) and
+copy its connection string.
+
+### 3. Configure the API
+
+```bash
+cp apps/api/.env.example apps/api/.env
+```
+
+Then edit `apps/api/.env`:
+
+| Variable | Notes |
+| --- | --- |
+| `DATABASE_URL` | Postgres connection string. Hosted providers usually require `?sslmode=require`. |
+| `SESSION_SECRET` | Signs the session cookie. 32+ random characters. |
+| `ENCRYPTION_KEY` | Encrypts provider API keys at rest. Base64 that decodes to exactly 32 bytes. |
+| `WEB_ORIGIN` | Origin allowed to call the API with credentials. `http://localhost:5173` in development. |
+| `RUN_CONCURRENCY` | How many workflow runs execute at once. |
+| `RUN_STEP_TIMEOUT_MS` | Per-step ceiling before the run is aborted. |
+| `RUN_SIMULATE` | `true` runs workflows against a stub instead of a real provider. |
+| `SEED_PASSWORD` | Password given to the seeded users. |
+
+Generate the two secrets:
+
+```bash
+node -e "console.log('SESSION_SECRET=' + require('crypto').randomBytes(48).toString('base64url'))"
+```
+
+```bash
+node -e "console.log('ENCRYPTION_KEY=' + require('crypto').randomBytes(32).toString('base64'))"
+```
+
+`ENCRYPTION_KEY` is not rotatable in place — change it and every stored provider
+key becomes undecryptable, and has to be pasted in again.
+
+### 4. Create the schema and seed it
+
+```bash
+npm run db:migrate
+```
+
+```bash
+npm run db:seed
+```
+
+The seed is idempotent: three roles, four users, six skills, three agents and
+three workflows, matching the design. It seeds **no** API keys.
+
+### 5. Run it
+
 ```bash
 npm run dev
 ```
 
-Then open http://localhost:5173.
+The API listens on `http://127.0.0.1:3001` and the web app on
+`http://localhost:5173`. Vite proxies `/api` to the API, so the browser is
+always same-origin — no CORS round-trip and no buffering on the SSE stream.
 
-| Script | What it does |
+## Seeded accounts
+
+All active accounts share the `SEED_PASSWORD` from `.env` (`back-office-2026`
+unless changed). The seed prints it on every run.
+
+| Account | Role | Sees |
+| --- | --- | --- |
+| `mariana.costa@sothebysrealty.pt` | Administrador | Everything |
+| `tiago.mendes@sothebysrealty.pt` | Gestor de Operações de IA | Platform, no administration |
+| `sofia.almeida@sothebysrealty.pt` | Consultor | Read-only, plus running workflows |
+| `ricardo.faria@sothebysrealty.pt` | Consultor | Invited — has no password until one is generated |
+
+An invited user gets access when an administrator uses **Gerar acesso** on the
+Utilizadores screen. The temporary password is shown once and never again.
+
+## Running workflows for real
+
+Out of the box `RUN_SIMULATE=true`, so runs complete against a stub and cost
+nothing. To use a real provider:
+
+1. Set `RUN_SIMULATE=false` and restart the API.
+2. Sign in as an administrator, open **Definições**, choose the provider, paste
+   the API key and save it. Keys are encrypted with `ENCRYPTION_KEY` before they
+   touch the database and are never sent back to the browser — the client only
+   ever learns whether a key exists.
+3. **Testar** verifies the key against the provider before you rely on it.
+
+Anthropic, OpenAI and Google Gemini are supported. Every step's token usage is
+recorded and priced, and spend is checked against both the agent's monthly
+ceiling and the platform budget — before each step, not just at the start.
+
+> **Verify the pricing table.** The per-million-token rates in
+> `packages/domain/src/catalogs.ts` are estimates. Check them against each
+> provider's current price list before treating the cost figures as accurate.
+
+## Permissions
+
+Every action in the UI is an individual permission (`agents.create`,
+`workflows.run`, `roles.edit`, …). Permissions compose into roles, roles are
+assigned to users. The client hides what a role cannot do; the server re-checks
+the same permission on every route, so hiding is convenience, not security.
+
+Editing a role's permissions revokes every session held by that role, so nobody
+keeps a grant they have just lost.
+
+## Scripts
+
+| Command | What it does |
 | --- | --- |
-| `npm run dev` | Vite dev server with HMR |
-| `npm run build` | `tsc -b` then a production build into `dist/` |
-| `npm run preview` | Serve the production build locally |
-| `npm run typecheck` | Type-check only |
-
-## Configuration
-
-The prototype exposed two canvas props; they are promoted to build-time environment variables,
-read in [`src/config.ts`](src/config.ts). Copy `.env.example` to `.env` to change them.
-
-| Variable | Design prop | Default | Meaning |
-| --- | --- | --- | --- |
-| `VITE_START_LOGGED_IN` | `startLoggedIn` | `false` | Skip the sign-in screen and boot straight into the back office |
-| `VITE_WORKFLOW_STEP_DELAY` | `workflowStepDelay` | `1000` | Milliseconds each workflow step stays in the "A executar" state (clamped to 300–2500) |
-
-## Signing in
-
-Sign-in is a demo flow, matching the design — **no credentials are checked**:
-
-- Enter the e-mail of any **active** seeded user and you sign in as that user, with that user's role.
-- Anything else (including an empty field) signs you in as **Mariana Costa**, *Administrador*.
-- The password field is decorative; its value is ignored.
-
-Signing in as **Ricardo Nunes** (*Consultor*) is the quickest way to see the permission gating: the
-sidebar drops to the sections that role can view and every mutating control disappears.
-
-## Data
-
-Everything lives in memory and resets on reload — there is no API, no database and no persistence,
-just like the prototype. Seed data (roles, users, skills, agents, workflows, settings) is in
-[`src/domain/seed.ts`](src/domain/seed.ts); static catalogues (models, providers, knowledge files,
-tool integrations, section copy) are in [`src/domain/catalogs.ts`](src/domain/catalogs.ts).
-
-> The API key shown in settings (`sk-ant-api03-9f2Kv7`) is fake placeholder text carried over from
-> the design — not a real secret.
-
-## Architecture
-
-```
-src/
-  config.ts            build-time knobs (the two design props) + timing constants
-  domain/              framework-free model: types, permission catalogue, seed + static catalogues
-  state/               useReducer store: types, pure reducer, pt-PT messages, React context provider
-  components/          shell pieces shared by every screen (sidebar, header, drawer, dialog, toasts)
-  screens/             one component per section, plus the login screen
-  styles/              tokens → base → layout → components → screens (imported by index.css)
-  utils/format.ts      number/plural/currency helpers
-```
-
-A few decisions worth knowing:
-
-- **One store, one reducer.** [`src/state/reducer.ts`](src/state/reducer.ts) is pure: toasts, the
-  confirm dialog and the workflow run are modelled as *data* (never callbacks), so every transition
-  is reproducible. Side effects — the workflow step timer and toast auto-dismiss — live in
-  `useEffect` inside [`src/state/store.tsx`](src/state/store.tsx).
-- **Permissions are a catalogue, not scattered checks.** `PermissionKey` is
-  `` `${SectionId}.${ActionId}` ``, and [`src/domain/permissions.ts`](src/domain/permissions.ts)
-  drives both the roles matrix UI and every `can(...)` gate, so the two can never drift apart.
-- **One drawer, five variants.** A single `DrawerState` with a flat field bag backs the agent,
-  skill, user, workflow and role editors, mirroring the prototype's single-drawer behaviour.
-- **Copy in one place.** Every user-facing action string is in
-  [`src/state/messages.ts`](src/state/messages.ts).
-
-### Deviations from the prototype
-
-Small, deliberate, and all in the same direction — the prototype's own rules, enforced properly:
-
-- Deleting a skill also removes it from agents' skill lists and from workflow steps, instead of
-  leaving dangling references.
-- Move-left / move-right on a workflow step are `disabled` at the ends rather than dimmed no-ops.
-- If a role change strips view access to the section currently on screen, the app navigates to the
-  first section that role *can* see.
+| `npm run dev` | Builds the shared package, then runs API and web together |
+| `npm run build` | Builds all three workspaces |
+| `npm run typecheck` | Type-checks all three workspaces |
+| `npm run db:up` / `db:down` | Starts / stops the bundled Postgres container |
+| `npm run db:migrate` | Applies migrations (development) |
+| `npm run db:seed` | Seeds demo content |
+| `npm run db:reset` | Drops, re-migrates and re-seeds |
+| `npm run db:studio` | Opens Prisma Studio |
