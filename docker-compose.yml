@@ -17,5 +17,18 @@ services:
       timeout: 5s
       retries: 10
 
+  # Development mail catcher: nothing ever leaves the machine. SMTP on 1025,
+  # the inbox at http://localhost:8025.
+  mail:
+    image: axllent/mailpit:latest
+    container_name: sothebys-back-office-mail
+    restart: unless-stopped
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
 volumes:
   db-data:

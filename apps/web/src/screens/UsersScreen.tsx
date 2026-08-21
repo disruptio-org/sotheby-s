@@ -1,4 +1,4 @@
-import { USER_STATUS_LABEL, type UserStatus } from '@sothebys/domain';
+import { USER_STATUS_LABEL, type UserDto, type UserStatus } from '@sothebys/domain';
 import { messages } from '../state/messages';
 import { useStore } from '../state/store';
 import { initials, timestamp } from '../utils/format';
@@ -9,9 +9,23 @@ const STATUS_COLOR: Record<UserStatus, string> = {
   SUSPENDED: 'var(--danger)',
 };
 
+/**
+ * What became of the invitation, for the line under the status. An account that
+ * has never signed in but has no live invitation is stuck, and says so.
+ */
+const inviteNote = (user: UserDto): string | null => {
+  if (user.status !== 'INVITED') return null;
+  const invitation = user.invitation;
+  if (!invitation) return 'Sem convite ativo';
+  if (invitation.expired) return `Convite expirou em ${timestamp(invitation.expiresAt)}`;
+  if (!invitation.sentAt) return 'Convite por enviar';
+  return `Convite válido até ${timestamp(invitation.expiresAt)}`;
+};
+
 export function UsersScreen() {
   const { state, dispatch, actions, can } = useStore();
   const canEdit = can('users.edit');
+  const canInvite = can('users.create');
   const canReset = can('users.reset');
   const canDelete = can('users.delete');
   const meId = state.session?.user.id ?? null;
@@ -30,6 +44,8 @@ export function UsersScreen() {
         {state.users.map((user) => {
           const role = state.roles.find((r) => r.id === user.roleId);
           const isMe = user.id === meId;
+          const note = inviteNote(user);
+          const invited = user.status === 'INVITED';
 
           return (
             <div className="table__row" key={user.id}>
@@ -70,27 +86,46 @@ export function UsersScreen() {
 
               <div className="status status--user">
                 <span className="dot" style={{ background: STATUS_COLOR[user.status] }} />
-                {USER_STATUS_LABEL[user.status]}
+                <span style={{ minWidth: 0 }}>
+                  {USER_STATUS_LABEL[user.status]}
+                  {note && <span className="status__note">{note}</span>}
+                </span>
               </div>
 
               <div className="cell-muted">{timestamp(user.lastLoginAt)}</div>
 
               <div className="cell-actions cell-actions--users">
-                {canReset && (
-                  <button
-                    type="button"
-                    className="link-action"
-                    onClick={() =>
-                      dispatch({
-                        type: 'confirm/request',
-                        text: messages.confirmResetPassword(user.name),
-                        intent: { kind: 'resetPassword', id: user.id },
-                      })
-                    }
-                  >
-                    {user.status === 'INVITED' ? 'Gerar acesso' : 'Repor palavra-passe'}
-                  </button>
-                )}
+                {invited
+                  ? canInvite && (
+                      <button
+                        type="button"
+                        className="link-action"
+                        onClick={() =>
+                          dispatch({
+                            type: 'confirm/request',
+                            text: messages.confirmResendInvitation(user.name),
+                            intent: { kind: 'resendInvitation', id: user.id },
+                          })
+                        }
+                      >
+                        Reenviar convite
+                      </button>
+                    )
+                  : canReset && (
+                      <button
+                        type="button"
+                        className="link-action"
+                        onClick={() =>
+                          dispatch({
+                            type: 'confirm/request',
+                            text: messages.confirmResetPassword(user.name),
+                            intent: { kind: 'resetPassword', id: user.id },
+                          })
+                        }
+                      >
+                        Repor palavra-passe
+                      </button>
+                    )}
                 {canEdit && !isMe && (
                   <button
                     type="button"

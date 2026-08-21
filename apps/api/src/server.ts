@@ -9,6 +9,7 @@ import { registerErrorHandler } from './http/errors.js';
 import { agentRoutes } from './routes/agents.js';
 import { authRoutes } from './routes/auth.js';
 import { catalogRoutes } from './routes/catalog.js';
+import { invitationRoutes } from './routes/invitations.js';
 import { roleRoutes } from './routes/roles.js';
 import { runRoutes } from './routes/runs.js';
 import { settingsRoutes } from './routes/settings.js';
@@ -55,6 +56,7 @@ export const buildServer = async (): Promise<FastifyInstance> => {
   await app.register(
     async (api) => {
       await api.register(authRoutes);
+      await api.register(invitationRoutes);
       await api.register(catalogRoutes);
       await api.register(agentRoutes);
       await api.register(skillRoutes);

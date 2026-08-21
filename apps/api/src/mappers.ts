@@ -1,6 +1,7 @@
 import {
   type AgentDto,
   type AgentStatus,
+  type InvitationDto,
   type PermissionMap,
   type RoleDto,
   type RunDto,
@@ -29,6 +30,22 @@ export const toRoleDto = (
   userCount,
 });
 
+export interface InvitationRow {
+  sentAt: Date | null;
+  expiresAt: Date;
+  usedAt: Date | null;
+}
+
+/** A redeemed invitation is no longer outstanding, so the list stops showing it. */
+export const toInvitationDto = (row: InvitationRow | null | undefined): InvitationDto | null =>
+  !row || row.usedAt
+    ? null
+    : {
+        sentAt: iso(row.sentAt),
+        expiresAt: row.expiresAt.toISOString(),
+        expired: row.expiresAt.getTime() < Date.now(),
+      };
+
 export const toUserDto = (row: {
   id: number;
   name: string;
@@ -37,6 +54,7 @@ export const toUserDto = (row: {
   status: UserStatus;
   lastLoginAt: Date | null;
   createdAt: Date;
+  invitations?: InvitationRow[];
 }): UserDto => ({
   id: row.id,
   name: row.name,
@@ -45,6 +63,7 @@ export const toUserDto = (row: {
   status: row.status,
   lastLoginAt: iso(row.lastLoginAt),
   createdAt: row.createdAt.toISOString(),
+  invitation: toInvitationDto(row.invitations?.[0]),
 });
 
 export const toSkillDto = (row: {

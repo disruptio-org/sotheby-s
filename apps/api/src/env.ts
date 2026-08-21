@@ -31,6 +31,21 @@ const schema = z.object({
    * and for CI, where no API key should exist.
    */
   RUN_SIMULATE: bool(false),
+
+  /* ── Mail ─────────────────────────────────────────────────────────────── */
+
+  /** In development these point at the mail catcher in docker-compose. */
+  SMTP_HOST: z.string().default('localhost'),
+  SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(1025),
+  /** Implicit TLS on connect, as on port 465. STARTTLS is used when offered. */
+  SMTP_SECURE: bool(false),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  /** Envelope sender. In production this domain needs SPF and DKIM records. */
+  MAIL_FROM: z.string().default('AI Back Office <nao-responder@sothebysrealty.pt>'),
+
+  /** How long an invitation link stays redeemable. */
+  INVITE_TTL_HOURS: z.coerce.number().int().min(1).max(720).default(72),
 });
 
 const parsed = schema.safeParse(process.env);

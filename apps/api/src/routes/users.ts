@@ -1,4 +1,9 @@
-import { userInviteSchema, userUpdateSchema, type UserStatus } from '@sothebys/domain';
+import {
+  userInviteSchema,
+  userUpdateSchema,
+  type InviteResultDto,
+  type UserStatus,
+} from '@sothebys/domain';
 import { randomBytes } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import { hashPassword } from '../crypto.js';
@@ -6,10 +11,14 @@ import { prisma } from '../db.js';
 import { authOf, requirePerm } from '../http/auth.js';
 import { conflict, notFound, unprocessable } from '../http/errors.js';
 import { idOf } from '../http/params.js';
+import { issueInvitation } from '../invitations.js';
 import { toUserDto } from '../mappers.js';
 
 /** 18 random bytes ≈ 144 bits, shown to the admin once and never stored raw. */
 const temporaryPassword = (): string => randomBytes(18).toString('base64url');
+
+/** Only the newest invitation matters: issuing one deletes the account's others. */
+const latestInvitation = { orderBy: { createdAt: 'desc' }, take: 1 } as const;
 
 /**
  * The platform must never end up with no one who can administer it. Any change
@@ -32,7 +41,10 @@ const assertNotLastAdmin = async (userId: number): Promise<void> => {
 
 export const userRoutes = async (app: FastifyInstance): Promise<void> => {
   app.get('/users', { preHandler: requirePerm('users.view') }, async () => {
-    const rows = await prisma.user.findMany({ orderBy: { id: 'asc' } });
+    const rows = await prisma.user.findMany({
+      orderBy: { id: 'asc' },
+      include: { invitations: latestInvitation },
+    });
     return rows.map(toUserDto);
   });
 
@@ -48,9 +60,9 @@ export const userRoutes = async (app: FastifyInstance): Promise<void> => {
     });
     if (taken) throw conflict('Já existe um utilizador com este e-mail.', 'email_taken');
 
-    // Invitations start without a password: the account cannot sign in until an
-    // administrator issues one through the reset endpoint.
-    const row = await prisma.user.create({
+    // The account exists with no password at all: the only way in is the link
+    // in the invitation, which the invitee redeems themselves.
+    const created = await prisma.user.create({
       data: {
         name: input.name,
         email: input.email.toLowerCase(),
@@ -59,9 +71,48 @@ export const userRoutes = async (app: FastifyInstance): Promise<void> => {
       },
     });
 
+    // A mail that will not send is reported, never swallowed — the invitation
+    // still exists and can be resent from the user's row.
+    const mail = await issueInvitation(created.id);
+
+    const row = await prisma.user.findUniqueOrThrow({
+      where: { id: created.id },
+      include: { invitations: latestInvitation },
+    });
+
     void reply.status(201);
-    return toUserDto(row);
+    return {
+      user: toUserDto(row),
+      mail: { delivered: mail.delivered, detail: mail.detail },
+    } satisfies InviteResultDto;
   });
+
+  app.post(
+    '/users/:id/invitation',
+    { preHandler: requirePerm('users.create') },
+    async (request) => {
+      const id = idOf(request);
+      const user = await prisma.user.findUnique({ where: { id } });
+      if (!user) throw notFound('Utilizador não encontrado.');
+      if (user.status !== 'INVITED') {
+        throw unprocessable('Esta conta já foi ativada. Reponha a palavra-passe em vez disso.');
+      }
+
+      // Issuing replaces the previous token, so the link already in the
+      // invitee's inbox stops working the moment this returns.
+      const mail = await issueInvitation(id);
+
+      const row = await prisma.user.findUniqueOrThrow({
+        where: { id },
+        include: { invitations: latestInvitation },
+      });
+
+      return {
+        user: toUserDto(row),
+        mail: { delivered: mail.delivered, detail: mail.detail },
+      } satisfies InviteResultDto;
+    },
+  );
 
   app.patch('/users/:id', { preHandler: requirePerm('users.edit') }, async (request) => {
     const id = idOf(request);
@@ -82,13 +133,20 @@ export const userRoutes = async (app: FastifyInstance): Promise<void> => {
       await assertNotLastAdmin(id);
     }
 
+    // Reactivating an account that never had a password puts it back among the
+    // invited, where it can be invited again — 'ACTIVE' with no password is an
+    // account nobody can sign in to and nobody can invite.
+    const status =
+      input.status === 'ACTIVE' && user.passwordHash === null ? 'INVITED' : input.status;
+
     const row = await prisma.user.update({
       where: { id },
       data: {
         ...(input.name !== undefined ? { name: input.name } : {}),
         ...(input.roleId !== undefined ? { roleId: input.roleId } : {}),
-        ...(input.status !== undefined ? { status: input.status as UserStatus } : {}),
+        ...(status !== undefined ? { status: status as UserStatus } : {}),
       },
+      include: { invitations: latestInvitation },
     });
 
     // A suspended account loses its sessions immediately.

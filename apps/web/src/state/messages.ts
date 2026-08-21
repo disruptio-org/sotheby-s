@@ -30,8 +30,14 @@ export const messages = {
   confirmDeleteSkill: (name: string) =>
     `Eliminar a skill ${quote(name)}? Será removida de todos os agentes e workflows.`,
 
-  inviteSent: (email: string) =>
-    `${email} convidado. Gere uma palavra-passe temporária para dar acesso.`,
+  inviteSent: (email: string) => `Convite enviado para ${email}.`,
+  inviteNotSent: (email: string) =>
+    `A conta foi criada, mas o convite não chegou a ${email}. Reenvie o convite.`,
+  inviteResendFailed: (email: string) =>
+    `Não foi possível enviar o convite para ${email}. Tente novamente.`,
+  inviteAccepted: 'Palavra-passe definida. Bem-vindo.',
+  confirmResendInvitation: (name: string) =>
+    `Enviar um novo convite a ${name}? A ligação anterior deixa de funcionar.`,
   userRoleChanged: (name: string, roleName: string) => `${name} é agora ${roleName}.`,
   userSuspended: (name: string) => `Conta de ${name} suspensa.`,
   userReactivated: (name: string) => `Conta de ${name} reativada.`,

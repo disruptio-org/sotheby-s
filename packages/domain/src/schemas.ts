@@ -32,6 +32,21 @@ export const changePasswordSchema = z.object({
   newPassword: z.string().min(PASSWORD_MIN_LENGTH).max(200),
 });
 
+/* ── Invitations ──────────────────────────────────────────────────────────── */
+
+/**
+ * The token travels in the body, never in a path or a query, so it cannot end
+ * up in an access log or a `Referer` header on the way to the server.
+ */
+export const invitationTokenSchema = z.object({
+  token: z.string().min(1).max(400),
+});
+
+export const invitationRedeemSchema = z.object({
+  token: z.string().min(1).max(400),
+  password: z.string().min(PASSWORD_MIN_LENGTH).max(200),
+});
+
 /* ── Agents ───────────────────────────────────────────────────────────────── */
 
 export const agentInputSchema = z.object({

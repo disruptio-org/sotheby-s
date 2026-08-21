@@ -1,6 +1,8 @@
 import type {
   AgentDto,
   AgentInput,
+  InvitationPeekDto,
+  InviteResultDto,
   KnowledgeFileDto,
   ModelSpec,
   PermissionKey,
@@ -73,11 +75,18 @@ export const endpoints = {
   users: {
     list: () => api.get<UserDto[]>('/users'),
     invite: (name: string, email: string, roleId: number) =>
-      api.post<UserDto>('/users', { name, email, roleId }),
+      api.post<InviteResultDto>('/users', { name, email, roleId }),
+    resendInvitation: (id: number) => api.post<InviteResultDto>(`/users/${id}/invitation`),
     update: (id: number, patch: { name?: string; roleId?: number; status?: UserStatus }) =>
       api.patch<UserDto>(`/users/${id}`, patch),
     resetPassword: (id: number) => api.post<{ password: string }>(`/users/${id}/reset-password`),
     remove: (id: number) => api.delete<{ ok: true }>(`/users/${id}`),
+  },
+
+  invitations: {
+    lookup: (token: string) => api.post<InvitationPeekDto>('/invitations/lookup', { token }),
+    redeem: (token: string, password: string) =>
+      api.post<SessionDto>('/invitations/redeem', { token, password }),
   },
 
   roles: {

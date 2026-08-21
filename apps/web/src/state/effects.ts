@@ -11,6 +11,7 @@ import {
 import type { Dispatch, MutableRefObject } from 'react';
 import { ApiError, errorMessage } from '../api/client';
 import { endpoints } from '../api/endpoints';
+import { takeInviteToken } from '../utils/invite';
 import { messages } from './messages';
 import type { AppAction, AppState, DataPatch } from './types';
 
@@ -77,13 +78,47 @@ export const makeActions = (dispatch: Send, read: Read) => {
     }
   };
 
+  /**
+   * Sends a fresh invitation, which retires any earlier link for that account.
+   * Used from the confirmation dialog, so it is a helper rather than an action.
+   */
+  const inviteAgain = async (user: UserDto): Promise<void> => {
+    const { mail } = await endpoints.users.resendInvitation(user.id);
+    if (mail.delivered) {
+      toast(messages.inviteSent(user.email));
+    } else {
+      toast(messages.inviteResendFailed(user.email), 'error');
+    }
+    await refresh(['users']);
+  };
+
   return {
     refresh,
     loadEverything,
 
     /* ── Session ──────────────────────────────────────────────────────────── */
 
+    /**
+     * A token in the address bar takes precedence over the session cookie: the
+     * person following an invitation link may well be at a shared machine where
+     * somebody else is still signed in, and they are entitled to their own
+     * account, not to whatever session happens to be open.
+     */
     bootstrap: async (): Promise<void> => {
+      if (read.current.status === 'invite') return;
+
+      const token = takeInviteToken();
+      if (token) {
+        dispatch({ type: 'invite/open', token });
+        try {
+          const peek = await endpoints.invitations.lookup(token);
+          dispatch({ type: 'invite/ready', name: peek.name, roleName: peek.roleName });
+        } catch (error) {
+          dispatch({ type: 'invite/refused', message: errorMessage(error) });
+        }
+        return;
+      }
+
       try {
         const session = await endpoints.session.me();
         dispatch({ type: 'boot/ready', session });
@@ -91,6 +126,49 @@ export const makeActions = (dispatch: Send, read: Read) => {
       } catch {
         // No valid session is the normal cold-start path, not an error.
         dispatch({ type: 'boot/anonymous' });
+      }
+    },
+
+    /**
+     * Sets the password on an invited account and signs the person in with it.
+     * The same three checks as the change-password form run first; the server
+     * repeats them, and is the only authority on whether the link is still good.
+     */
+    redeemInvitation: async (): Promise<void> => {
+      const invite = read.current.invite;
+      if (!invite || invite.busy || invite.stage !== 'ready') return;
+
+      if (!invite.password || !invite.confirm) {
+        dispatch({ type: 'invite/error', message: messages.errors.passwordFieldsRequired });
+        return;
+      }
+      if (invite.password.length < PASSWORD_MIN_LENGTH) {
+        dispatch({
+          type: 'invite/error',
+          message: messages.errors.passwordTooShort(PASSWORD_MIN_LENGTH),
+        });
+        return;
+      }
+      if (invite.password !== invite.confirm) {
+        dispatch({ type: 'invite/error', message: messages.errors.passwordMismatch });
+        return;
+      }
+
+      dispatch({ type: 'invite/busy', value: true });
+      try {
+        const session = await endpoints.invitations.redeem(invite.token, invite.password);
+        // 'boot/ready' drops the invite slice, and the typed password with it.
+        dispatch({ type: 'boot/ready', session });
+        toast(messages.inviteAccepted);
+        await loadEverything();
+      } catch (error) {
+        // A refusal of the link itself replaces the form; anything else is a
+        // problem with what was typed and leaves it in place.
+        if (error instanceof ApiError && error.status === 410) {
+          dispatch({ type: 'invite/refused', message: error.message });
+        } else {
+          dispatch({ type: 'invite/error', message: errorMessage(error) });
+        }
       }
     },
 
@@ -229,8 +307,13 @@ export const makeActions = (dispatch: Send, read: Read) => {
               dispatch({ type: 'drawer/error', message: messages.errors.emailInvalid });
               return;
             }
-            await endpoints.users.invite(name, email, Number(fields.roleId));
-            toast(messages.inviteSent(email));
+            const invited = await endpoints.users.invite(name, email, Number(fields.roleId));
+            // The account exists either way; only the e-mail may have failed.
+            if (invited.mail.delivered) {
+              toast(messages.inviteSent(email));
+            } else {
+              toast(messages.inviteNotSent(email), 'error');
+            }
             await refresh(['users', 'roles']);
             break;
           }
@@ -310,6 +393,12 @@ export const makeActions = (dispatch: Send, read: Read) => {
             toast(messages.roleDeleted);
             await refresh(['roles']);
             break;
+
+          case 'resendInvitation': {
+            const user = read.current.users.find((u) => u.id === intent.id);
+            if (user) await inviteAgain(user);
+            break;
+          }
 
           case 'resetPassword': {
             const user = read.current.users.find((u) => u.id === intent.id);

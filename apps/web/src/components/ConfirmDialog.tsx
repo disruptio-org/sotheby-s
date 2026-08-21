@@ -1,5 +1,17 @@
 import { useEffect, useRef } from 'react';
 import { useStore } from '../state/store';
+import type { ConfirmIntent } from '../state/types';
+
+/** What the accepting button says, and whether it is the destructive one. */
+const ACTION: Record<ConfirmIntent['kind'], { label: string; danger: boolean }> = {
+  deleteAgent: { label: 'Eliminar', danger: true },
+  deleteSkill: { label: 'Eliminar', danger: true },
+  deleteUser: { label: 'Eliminar', danger: true },
+  deleteWorkflow: { label: 'Eliminar', danger: true },
+  deleteRole: { label: 'Eliminar', danger: true },
+  resetPassword: { label: 'Gerar palavra-passe', danger: false },
+  resendInvitation: { label: 'Enviar convite', danger: false },
+};
 
 export function ConfirmDialog() {
   const { state, dispatch, actions } = useStore();
@@ -18,7 +30,7 @@ export function ConfirmDialog() {
 
   if (!confirm) return null;
 
-  const isReset = confirm.intent.kind === 'resetPassword';
+  const action = ACTION[confirm.intent.kind];
 
   return (
     <div className="modal-scrim" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
@@ -31,11 +43,11 @@ export function ConfirmDialog() {
           <button
             ref={acceptRef}
             type="button"
-            className={`btn ${isReset ? 'btn--primary' : 'btn--danger'}`}
+            className={`btn ${action.danger ? 'btn--danger' : 'btn--primary'}`}
             disabled={confirm.busy}
             onClick={() => void actions.acceptConfirm()}
           >
-            {confirm.busy ? 'A processar…' : isReset ? 'Gerar palavra-passe' : 'Eliminar'}
+            {confirm.busy ? 'A processar…' : action.label}
           </button>
           <button
             type="button"

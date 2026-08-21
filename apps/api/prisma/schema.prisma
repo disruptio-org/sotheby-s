@@ -37,6 +37,7 @@ model User {
   status       UserStatus @default(INVITED)
   lastLoginAt  DateTime?
   sessions     Session[]
+  invitations  Invitation[]
   runs         Run[]
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
@@ -53,6 +54,27 @@ model Session {
   userAgent String?
   expiresAt DateTime
   createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// A single-use invitation link. The token itself is never stored: only its
+/// SHA-256, so a leaked database cannot be used to redeem anybody's account.
+/// Resending deletes the account's earlier rows, which is what invalidates the
+/// links already in someone's inbox.
+model Invitation {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  /// Set the moment the link is redeemed; a used row is kept so a second click
+  /// can be told apart from a link that was superseded.
+  usedAt    DateTime?
+  /// Null when the mail transport refused it, which is what a resend fixes.
+  sentAt    DateTime?
+  createdAt DateTime  @default(now())
 
   @@index([userId])
   @@index([expiresAt])

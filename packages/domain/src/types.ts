@@ -54,6 +54,26 @@ export interface RoleDto {
   userCount: number;
 }
 
+/** The outstanding invitation on an account, as the user list needs it. */
+export interface InvitationDto {
+  /** Null when the mail transport refused the message; a resend is the fix. */
+  sentAt: string | null;
+  expiresAt: string;
+  expired: boolean;
+}
+
+/**
+ * All a set-password page is told about the person redeeming a link: their own
+ * name and the profile waiting for them. Never the e-mail, never anyone else.
+ */
+export interface InvitationPeekDto {
+  name: string;
+  roleName: string;
+}
+
+/** Why a link was refused, so the page can explain itself and offer a way out. */
+export type InvitationRefusalCode = 'invitation_invalid' | 'invitation_expired' | 'invitation_used';
+
 export interface UserDto {
   id: number;
   name: string;
@@ -63,6 +83,14 @@ export interface UserDto {
   /** ISO 8601, or null for an account that has never signed in. */
   lastLoginAt: string | null;
   createdAt: string;
+  /** Present only while an account has an invitation outstanding. */
+  invitation: InvitationDto | null;
+}
+
+/** What inviting a user answers: the account, and whether its e-mail went out. */
+export interface InviteResultDto {
+  user: UserDto;
+  mail: { delivered: boolean; detail: string | null };
 }
 
 export interface SkillDto {

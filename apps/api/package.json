@@ -26,13 +26,15 @@
     "@prisma/client": "^5.22.0",
     "@sothebys/domain": "*",
     "fastify": "^5.1.0",
+    "nodemailer": "^9.0.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",
+    "@types/nodemailer": "^8.0.1",
+    "pino-pretty": "^13.0.0",
     "prisma": "^5.22.0",
     "tsx": "^4.19.2",
-    "typescript": "^5.6.3",
-    "pino-pretty": "^13.0.0"
+    "typescript": "^5.6.3"
   }
 }

@@ -72,6 +72,7 @@ export const createInitialState = (): AppState => ({
 
   revealedPassword: null,
   passwordChange: null,
+  invite: null,
 });
 
 const withToast = (state: AppState, message: string, tone: Toast['tone'] = 'info'): AppState => {
@@ -208,6 +209,7 @@ export const reducer = (state: AppState, action: AppAction): AppState => {
         loginPassword: '',
         loginError: '',
         loginBusy: false,
+        invite: null,
       };
 
     case 'session/signedOut':
@@ -385,6 +387,71 @@ export const reducer = (state: AppState, action: AppAction): AppState => {
             passwordChange: { ...state.passwordChange, error: action.message, busy: false },
           }
         : state;
+
+    // The invitation lives beside the session, not inside it: the person is
+    // not signed in yet, so `status` leaves 'anonymous' for a screen of its own.
+    case 'invite/open':
+      return {
+        ...state,
+        status: 'invite',
+        invite: {
+          token: action.token,
+          stage: 'checking',
+          name: '',
+          roleName: '',
+          password: '',
+          confirm: '',
+          refusal: '',
+          error: '',
+          busy: false,
+        },
+      };
+
+    case 'invite/ready':
+      return state.invite
+        ? {
+            ...state,
+            invite: {
+              ...state.invite,
+              stage: 'ready',
+              name: action.name,
+              roleName: action.roleName,
+            },
+          }
+        : state;
+
+    // A refused link drops the typed password with it — the form is gone.
+    case 'invite/refused':
+      return state.invite
+        ? {
+            ...state,
+            invite: {
+              ...state.invite,
+              stage: 'refused',
+              refusal: action.message,
+              password: '',
+              confirm: '',
+              error: '',
+              busy: false,
+            },
+          }
+        : state;
+
+    case 'invite/setField':
+      return state.invite
+        ? { ...state, invite: { ...state.invite, [action.field]: action.value, error: '' } }
+        : state;
+
+    case 'invite/busy':
+      return state.invite ? { ...state, invite: { ...state.invite, busy: action.value } } : state;
+
+    case 'invite/error':
+      return state.invite
+        ? { ...state, invite: { ...state.invite, error: action.message, busy: false } }
+        : state;
+
+    case 'invite/dismiss':
+      return { ...state, status: 'anonymous', invite: null };
   }
 };
 

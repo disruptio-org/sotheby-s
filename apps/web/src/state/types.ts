@@ -15,7 +15,7 @@ import type {
 } from '@sothebys/domain';
 import type { CatalogDto } from '../api/endpoints';
 
-export type BootStatus = 'booting' | 'anonymous' | 'ready';
+export type BootStatus = 'booting' | 'anonymous' | 'invite' | 'ready';
 
 export type DrawerKind = 'agent' | 'skill' | 'user' | 'workflow' | 'role';
 
@@ -64,7 +64,8 @@ export type ConfirmIntent =
   | { kind: 'deleteUser'; id: number }
   | { kind: 'deleteWorkflow'; id: number }
   | { kind: 'deleteRole'; id: number }
-  | { kind: 'resetPassword'; id: number };
+  | { kind: 'resetPassword'; id: number }
+  | { kind: 'resendInvitation'; id: number };
 
 export interface ConfirmState {
   text: string;
@@ -85,6 +86,29 @@ export interface PasswordChangeState {
 }
 
 export type PasswordField = 'current' | 'next' | 'confirm';
+
+/**
+ * The invitation screen, reached by following the link in the e-mail. It lives
+ * outside the session entirely: nobody is signed in while it is on screen.
+ */
+export interface InviteState {
+  /** Held in memory only — the reducer never puts it back in the address bar. */
+  token: string;
+  stage: InviteStage;
+  name: string;
+  roleName: string;
+  password: string;
+  confirm: string;
+  /** Why the link itself is no good. Set only in the `refused` stage. */
+  refusal: string;
+  /** A problem with what was typed. The form stays on screen. */
+  error: string;
+  busy: boolean;
+}
+
+export type InviteStage = 'checking' | 'ready' | 'refused';
+
+export type InviteField = 'password' | 'confirm';
 
 export interface Toast {
   id: number;
@@ -142,6 +166,9 @@ export interface AppState {
 
   /** The password change dialog, `null` when closed. */
   passwordChange: PasswordChangeState | null;
+
+  /** The invitation being accepted, `null` unless the boot found a token. */
+  invite: InviteState | null;
 }
 
 export interface DataPatch {
@@ -193,6 +220,13 @@ export type AppAction =
   | { type: 'passwordChange/close' }
   | { type: 'passwordChange/setField'; field: PasswordField; value: string }
   | { type: 'passwordChange/busy'; value: boolean }
-  | { type: 'passwordChange/error'; message: string };
+  | { type: 'passwordChange/error'; message: string }
+  | { type: 'invite/open'; token: string }
+  | { type: 'invite/ready'; name: string; roleName: string }
+  | { type: 'invite/refused'; message: string }
+  | { type: 'invite/setField'; field: InviteField; value: string }
+  | { type: 'invite/busy'; value: boolean }
+  | { type: 'invite/error'; message: string }
+  | { type: 'invite/dismiss' };
 
 export type { PermissionKey, ProviderId, UserStatus };

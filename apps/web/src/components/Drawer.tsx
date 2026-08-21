@@ -112,8 +112,8 @@ export function Drawer() {
                 </select>
               </Field>
               <p className="note">
-                O convite cria a conta sem palavra-passe. Gere depois um acesso temporário na
-                lista de utilizadores.
+                A conta é criada sem palavra-passe. O convite segue por e-mail e é quem o recebe
+                que define a sua própria palavra-passe.
               </p>
             </>
           )}

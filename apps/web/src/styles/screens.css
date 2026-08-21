@@ -326,6 +326,16 @@
   letter-spacing: 0.1em;
 }
 
+/* The fate of an invitation, under the status it belongs to. */
+.status__note {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--muted-soft);
+}
+
 .cell-actions--users {
   gap: 13px;
   flex-wrap: wrap;
@@ -732,6 +742,17 @@
 .login__note {
   font-size: 10px;
   color: var(--muted-lighter);
+}
+
+.invite__role {
+  margin-top: -6px;
+  font-size: 11.5px;
+  color: var(--muted-soft);
+}
+
+.invite__role strong {
+  color: var(--muted-deep);
+  font-weight: 600;
 }
 
 @media (max-width: 860px) {

@@ -47,6 +47,11 @@ npm run db:up
 local Postgres), or use a hosted database such as [Neon](https://neon.tech) and
 copy its connection string.
 
+The same compose file runs [Mailpit](https://mailpit.axllent.org) as the
+development mail server. It accepts every message and delivers none of them —
+read what the platform sent at **http://localhost:8025**. Nothing leaves the
+machine.
+
 ### 3. Configure the API
 
 ```bash
@@ -64,6 +69,10 @@ Then edit `apps/api/.env`:
 | `RUN_CONCURRENCY` | How many workflow runs execute at once. |
 | `RUN_STEP_TIMEOUT_MS` | Per-step ceiling before the run is aborted. |
 | `RUN_SIMULATE` | `true` runs workflows against a stub instead of a real provider. |
+| `SMTP_HOST` / `SMTP_PORT` | Outgoing mail. `localhost:1025` is the bundled Mailpit. |
+| `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` | TLS and credentials, for a real relay. |
+| `MAIL_FROM` | The From address on invitations. |
+| `INVITE_TTL_HOURS` | How long an invitation link stays good. 72 by default. |
 | `SEED_PASSWORD` | Password given to the seeded users. |
 
 Generate the two secrets:
@@ -112,10 +121,15 @@ unless changed). The seed prints it on every run.
 | `mariana.costa@sothebysrealty.pt` | Administrador | Everything |
 | `duarte.almeida@sothebysrealty.pt` | Gestor de Operações de IA | Platform, no administration |
 | `sofia.mendes@sothebysrealty.pt` | Consultor | Read-only view of agents, skills and workflows |
-| `ricardo.faria@sothebysrealty.pt` | Consultor | Invited — has no password until one is generated |
+| `ricardo.faria@sothebysrealty.pt` | Consultor | Invited — has no password until the invitation is accepted |
 
-An invited user gets access when an administrator uses **Gerar acesso** on the
-Utilizadores screen. The temporary password is shown once and never again.
+## Invitations
+
+Creating a user on the Utilizadores screen sends them an invitation. Open
+**http://localhost:8025**, follow the link in the message, and set a password:
+that signs the new account in and marks it active. The link is single-use, good
+for `INVITE_TTL_HOURS`, and **Reenviar convite** retires whatever link went out
+before it. No password is ever shown to the administrator.
 
 ## Running workflows for real
 
