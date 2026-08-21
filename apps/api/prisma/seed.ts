@@ -197,19 +197,19 @@ async function main(): Promise<void> {
     });
   }
 
-  const knowledge = [];
+  const knowledge: { id: number }[] = [];
   for (const name of KNOWLEDGE) {
     const existing = await prisma.knowledgeFile.findFirst({ where: { name } });
     knowledge.push(existing ?? (await prisma.knowledgeFile.create({ data: { name } })));
   }
 
-  const tools = [];
+  const tools: { id: number }[] = [];
   for (const name of TOOLS) {
     const existing = await prisma.toolIntegration.findFirst({ where: { name } });
     tools.push(existing ?? (await prisma.toolIntegration.create({ data: { name } })));
   }
 
-  const skills = [];
+  const skills: { id: number }[] = [];
   for (const skill of SKILLS) {
     const existing = await prisma.skill.findFirst({ where: { name: skill.name } });
     skills.push(
@@ -219,7 +219,7 @@ async function main(): Promise<void> {
     );
   }
 
-  const agents = [];
+  const agents: { id: number }[] = [];
   for (const agent of AGENTS) {
     const existing = await prisma.agent.findFirst({ where: { name: agent.name } });
     const data = {

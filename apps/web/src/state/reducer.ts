@@ -153,6 +153,11 @@ const applyRunEvent = (state: AppState, action: Extract<AppAction, { type: 'run/
   const event = action.event;
   const current = state.activeRun;
 
+  // A stream closing after the user has moved on can deliver one last frame;
+  // ignore anything that is not about the run currently on screen.
+  const runId = event.type === 'run.snapshot' ? event.run.id : event.runId;
+  if (current && current.id !== runId) return state;
+
   if (event.type === 'run.snapshot') return { ...state, activeRun: event.run };
   if (!current) return state;
 
