@@ -1,0 +1,66 @@
+/* Design tokens lifted from the canvas. Every literal colour in the app
+   resolves to one of these. */
+:root {
+  /* Ink & type */
+  --ink: #0c0c0c;
+  --ink-hover: #2e2e2c;
+  --text: #1a1a1a;
+  --heading: #141414;
+  --heading-strong: #161616;
+  --heading-dense: #1d1d1b;
+
+  --muted: #6f6f6b;
+  --muted-deep: #54544f;
+  --muted-mid: #5f5f5b;
+  --muted-warm: #75756f;
+  --muted-soft: #80807b;
+  --muted-light: #8f8f8a;
+  --muted-lighter: #9a9a94;
+  --muted-line: #9a9a95;
+
+  /* Surfaces */
+  --bg: #f4f4f2;
+  --surface: #ffffff;
+  --surface-alt: #fafaf8;
+  --panel: #fbfbf9;
+  --chip-bg: #f0f0ee;
+
+  /* Rules & fields */
+  --line: #e4e4e0;
+  --line-header: #e2e2de;
+  --line-drawer: #e8e8e6;
+  --line-soft: #ececea;
+  --line-softer: #eeeeec;
+  --line-softest: #f0f0ee;
+  --field-border: #d6d6d2;
+  --field-border-soft: #ddddd9;
+  --control-border: #c6c6c2;
+  --checkbox-border: #c2c2be;
+  --dashed-border: #ccccc8;
+  --scroll-thumb: #d8d8d4;
+
+  /* Signal */
+  --ok: #3e7a5e;
+  --ok-soft: #9dbfa9;
+  --warn: #a8863c;
+  --danger: #9a3b2e;
+  --danger-hover: #6e2418;
+  --danger-solid: #7e2f23;
+  --danger-solid-hover: #63241a;
+
+  /* Dark surfaces */
+  --dark: #0c0c0c;
+  --dark-toast: #101010;
+  --on-dark: #f5f5f3;
+  --on-dark-dim: #a3a39e;
+
+  /* Type families */
+  --serif: 'Cormorant Garamond', 'Times New Roman', Georgia, serif;
+  --sans: 'Libre Franklin', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+
+  /* Layout */
+  --sidebar-width: 252px;
+  --sidebar-width-collapsed: 64px;
+  --page-max: 1180px;
+}

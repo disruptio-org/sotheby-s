@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Libre+Franklin:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0;background:#F4F4F2;}
+*{box-sizing:border-box;}
+a{color:#0C0C0C;text-decoration:none;}
+a:hover{color:#75756F;}
+input,select,textarea,button{font-family:'Libre Franklin',sans-serif;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#0C0C0C !important;}
+textarea{resize:vertical;}
+@keyframes dcDrawer{from{transform:translateX(28px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+@keyframes dcFade{from{opacity:0;}to{opacity:1;}}
+@keyframes dcToast{from{transform:translateY(10px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+@keyframes dcPulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:#D8D8D4;}
+::-webkit-scrollbar-track{background:transparent;}
+</style>
+</helmet>
+<div style="font-family:'Libre Franklin',sans-serif;color:#1A1A1A;height:100vh;overflow:hidden;background:#F4F4F2;">
+<sc-if value="{{ inApp }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;height:100%;">
+  <div style="width:{{ sbWidth }};flex-shrink:0;background:#0C0C0C;display:flex;flex-direction:column;color:#F5F5F3;transition:width 0.22s ease;overflow:hidden;">
+    <div style="padding:{{ brandPad }};border-bottom:1px solid rgba(255,255,255,0.09);display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+      <sc-if value="{{ navExpanded }}" hint-placeholder-val="{{ true }}">
+      <div style="min-width:0;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:27px;font-weight:500;letter-spacing:0.01em;color:#FFFFFF;white-space:nowrap;">Sotheby&rsquo;s</div>
+        <div style="font-size:9.5px;letter-spacing:0.26em;text-transform:uppercase;color:#A3A39E;font-weight:600;margin-top:6px;white-space:nowrap;">AI Back Office</div>
+      </div>
+      <button onClick="{{ toggleNav }}" title="Recolher menu" style="background:none;border:1px solid rgba(255,255,255,0.18);width:24px;height:24px;flex-shrink:0;color:rgba(255,255,255,0.6);cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:4px;padding:0;" style-hover="color:#FFFFFF;border-color:rgba(255,255,255,0.5);">
+        <svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8.5 3L4.5 7l4 4"></path></svg>
+      </button>
+      </sc-if>
+      <sc-if value="{{ navCollapsed }}" hint-placeholder-val="{{ false }}">
+      <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:12px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;color:#FFFFFF;">S</div>
+        <button onClick="{{ toggleNav }}" title="Expandir menu" style="background:none;border:1px solid rgba(255,255,255,0.18);width:24px;height:24px;color:rgba(255,255,255,0.6);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;" style-hover="color:#FFFFFF;border-color:rgba(255,255,255,0.5);">
+          <svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M5.5 3l4 4-4 4"></path></svg>
+        </button>
+      </div>
+      </sc-if>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:18px 0;">
+      <sc-if value="{{ navExpanded }}" hint-placeholder-val="{{ true }}">
+      <div style="font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.42);font-weight:600;padding:6px 26px 8px;white-space:nowrap;">Plataforma</div>
+      </sc-if>
+      <sc-if value="{{ navAgents.show }}" hint-placeholder-val="{{ true }}">
+      <div onClick="{{ navAgents.go }}" title="Agentes" style="display:flex;align-items:center;gap:11px;padding:{{ navItemPad }};margin:1px 10px;justify-content:{{ navJustify }};cursor:pointer;font-size:13px;letter-spacing:0.02em;font-weight:500;color:{{ navAgents.color }};background:{{ navAgents.bg }};border-left:2px solid {{ navAgents.edge }};" style-hover="color:#FFFFFF;">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="5" r="2.6"></circle><path d="M2.5 13.5c1-3 3-4 5.5-4s4.5 1 5.5 4"></path></svg>
+        <sc-if value="{{ navExpanded }}" hint-placeholder-val="{{ true }}"><span style="white-space:nowrap;">Agentes</span></sc-if>
+      </div>
+      </sc-if>
+      <sc-if value="{{ navSkills.show }}" hint-placeholder-val="{{ true }}">
+      <div onClick="{{ navSkills.go }}" title="Skills" style="display:flex;align-items:center;gap:11px;padding:{{ navItemPad }};margin:1px 10px;justify-content:{{ navJustify }};cursor:pointer;font-size:13px;letter-spacing:0.02em;font-weight:500;color:{{ navSkills.color }};background:{{ navSkills.bg }};border-left:2px solid {{ navSkills.edge }};" style-hover="color:#FFFFFF;">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M8 1.5L9.7 6.3L14.5 8L9.7 9.7L8 14.5L6.3 9.7L1.5 8L6.3 6.3Z"></path></svg>
+        <sc-if value="{{ navExpanded }}" hint-placeholder-val="{{ true }}"><span style="white-space:nowrap;">Skills</span></sc-if>
+      </div>
+      </sc-if>
+      <sc-if value="{{ navWorkflows.show }}" hint-placeholder-val="{{ true }}">
+      <div onClick="{{ navWorkflows.go }}" title="Workflows" style="display:flex;align-items:center;gap:11px;padding:{{ navItemPad }};margin:1px 10px;justify-content:{{ navJustify }};cursor:pointer;font-size:13px;letter-spacing:0.02em;font-weight:500;color:{{ navWorkflows.color }};background:{{ navWorkflows.bg }};border-left:2px solid {{ navWorkflows.edge }};" style-hover="color:#FFFFFF;">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="3" cy="3.2" r="1.7"></circle><circle cx="13" cy="8" r="1.7"></circle><circle cx="3" cy="12.8" r="1.7"></circle><path d="M4.7 3.2H9a2 2 0 0 1 2 2V8M4.7 12.8H9a2 2 0 0 0 2-2V8"></path></svg>
+        <sc-if value="{{ navExpanded }}" hint-placeholder-val="{{ true }}"><span style="white-space:nowrap;">Workflows</span></sc-if>
+      </div>
+      </sc-if>
+      <sc-if value="{{ navApps.show }}" hint-placeholder-val="{{ true }}">
+      <div onClick="{{ navApps.go }}" title="Apps" style="display:flex;align-items:center;gap:11px;padding:{{ navItemPad }};margin:1px 10px;justify-content:{{ navJustify }};cursor:pointer;font-size:13px;letter-spacing:0.02em;font-weight:500;color:{{ navApps.color }};background:{{ navApps.bg }};border-left:2px solid {{ navApps.edge }};" style-hover="color:#FFFFFF;">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="1.5" width="5.4" height="5.4"></rect><rect x="9.1" y="1.5" width="5.4" height="5.4"></rect><rect x="1.5" y="9.1" width="5.4" height="5.4"></rect><rect x="9.1" y="9.1" width="5.4" height="5.4" stroke-dasharray="2 1.6"></rect></svg>
+        <sc-if value="{{ navExpanded }}" hint-placeholder-val="{{ true }}"><span style="white-space:nowrap;">Apps</span></sc-if>
+      </div>
+      </sc-if>
+      <sc-if value="{{ showAdminLabel }}" hint-placeholder-val="{{ true }}">
+      <div style="font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.42);font-weight:600;padding:24px 26px 8px;white-space:nowrap;">Administra&ccedil;&atilde;o</div>
+      </sc-if>
+      <sc-if value="{{ showAdminRule }}" hint-placeholder-val="{{ false }}">
+      <div style="height:1px;background:rgba(255,255,255,0.14);margin:18px 14px;"></div>
+      </sc-if>
+      <sc-if value="{{ navUsers.show }}" hint-placeholder-val="{{ true }}">
+      <div onClick="{{ navUsers.go }}" title="Utilizadores" style="display:flex;align-items:center;gap:11px;padding:{{ navItemPad }};margin:1px 10px;justify-content:{{ navJustify }};cursor:pointer;font-size:13px;letter-spacing:0.02em;font-weight:500;color:{{ navUsers.color }};background:{{ navUsers.bg }};border-left:2px solid {{ navUsers.edge }};" style-hover="color:#FFFFFF;">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="5.5" cy="5" r="2.2"></circle><path d="M1.5 13c.8-2.6 2.3-3.6 4-3.6s3.2 1 4 3.6"></path><circle cx="11.6" cy="5.4" r="1.8"></circle><path d="M11.9 9.5c1.4.3 2.3 1.3 2.8 3"></path></svg>
+        <sc-if value="{{ navExpanded }}" hint-placeholder-val="{{ true }}"><span style="white-space:nowrap;">Utilizadores</span></sc-if>
+      </div>
+      </sc-if>
+      <sc-if value="{{ navRoles.show }}" hint-placeholder-val="{{ true }}">
+      <div onClick="{{ navRoles.go }}" title="Perfis & Permiss&otilde;es" style="display:flex;align-items:center;gap:11px;padding:{{ navItemPad }};margin:1px 10px;justify-content:{{ navJustify }};cursor:pointer;font-size:13px;letter-spacing:0.02em;font-weight:500;color:{{ navRoles.color }};background:{{ navRoles.bg }};border-left:2px solid {{ navRoles.edge }};" style-hover="color:#FFFFFF;">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="5" cy="8" r="2.9"></circle><path d="M7.9 8h6.6M11.9 8v2.5M14.5 8v1.9"></path></svg>
+        <sc-if value="{{ navExpanded }}" hint-placeholder-val="{{ true }}"><span style="white-space:nowrap;">Perfis &amp; Permiss&otilde;es</span></sc-if>
+      </div>
+      </sc-if>
+      <sc-if value="{{ navSettings.show }}" hint-placeholder-val="{{ true }}">
+      <div onClick="{{ navSettings.go }}" title="Defini&ccedil;&otilde;es" style="display:flex;align-items:center;gap:11px;padding:{{ navItemPad }};margin:1px 10px;justify-content:{{ navJustify }};cursor:pointer;font-size:13px;letter-spacing:0.02em;font-weight:500;color:{{ navSettings.color }};background:{{ navSettings.bg }};border-left:2px solid {{ navSettings.edge }};" style-hover="color:#FFFFFF;">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1.5 4.5h13M1.5 11.5h13"></path><circle cx="6" cy="4.5" r="1.8" fill="#0C0C0C"></circle><circle cx="10" cy="11.5" r="1.8" fill="#0C0C0C"></circle></svg>
+        <sc-if value="{{ navExpanded }}" hint-placeholder-val="{{ true }}"><span style="white-space:nowrap;">Defini&ccedil;&otilde;es</span></sc-if>
+      </div>
+      </sc-if>
+    </div>
+    <div style="padding:{{ footPad }};border-top:1px solid rgba(255,255,255,0.09);display:flex;align-items:center;gap:12px;flex-direction:{{ footDir }};">
+      <div style="width:34px;height:34px;border:1px solid rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:15px;color:#F0F0EE;flex-shrink:0;" title="{{ myName }}">{{ myInitials }}</div>
+      <sc-if value="{{ navExpanded }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12.5px;font-weight:500;color:#F5F5F3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ myName }}</div>
+        <div style="font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-top:2px;">{{ myRole }}</div>
+      </div>
+      </sc-if>
+      <button onClick="{{ signOut }}" title="Terminar sess&atilde;o" style="background:none;border:none;padding:4px;color:rgba(255,255,255,0.5);cursor:pointer;" style-hover="color:#F5F5F3;">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M6 2H2.5v12H6M10.5 5l3 3-3 3M13.5 8H6"></path></svg>
+      </button>
+    </div>
+  </div>
+  <div style="flex:1;overflow-y:auto;">
+    <div style="max-width:1180px;margin:0 auto;padding:46px 52px 70px;">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;border-bottom:1px solid #E2E2DE;padding-bottom:24px;">
+        <div>
+          <div style="font-size:10px;letter-spacing:0.24em;font-weight:600;color:#75756F;text-transform:uppercase;margin-bottom:10px;">{{ sectionGroup }}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:35px;font-weight:500;color:#141414;line-height:1.05;">{{ sectionTitle }}</div>
+          <div style="font-size:13.5px;color:#6F6F6B;margin-top:9px;max-width:580px;line-height:1.55;">{{ sectionDesc }}</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-shrink:0;">
+          <sc-if value="{{ showNewAgentBtn }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ openNewAgent }}" style="background:#0C0C0C;color:#FFFFFF;border:none;padding:12px 22px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;font-weight:600;cursor:pointer;" style-hover="background:#2E2E2C;">Novo Agente</button>
+          </sc-if>
+          <sc-if value="{{ showNewSkillBtn }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ openNewSkill }}" style="background:#0C0C0C;color:#FFFFFF;border:none;padding:12px 22px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;font-weight:600;cursor:pointer;" style-hover="background:#2E2E2C;">Nova Skill</button>
+          </sc-if>
+          <sc-if value="{{ showNewWorkflowBtn }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ openNewWorkflow }}" style="background:#0C0C0C;color:#FFFFFF;border:none;padding:12px 22px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;font-weight:600;cursor:pointer;" style-hover="background:#2E2E2C;">Novo Workflow</button>
+          </sc-if>
+          <sc-if value="{{ showInviteBtn }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ openInviteUser }}" style="background:#0C0C0C;color:#FFFFFF;border:none;padding:12px 22px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;font-weight:600;cursor:pointer;" style-hover="background:#2E2E2C;">Convidar Utilizador</button>
+          </sc-if>
+          <sc-if value="{{ showNewRoleBtn }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ openNewRole }}" style="background:#0C0C0C;color:#FFFFFF;border:none;padding:12px 22px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;font-weight:600;cursor:pointer;" style-hover="background:#2E2E2C;">Novo Perfil</button>
+          </sc-if>
+        </div>
+      </div>
+      <sc-if value="{{ isAgents }}" hint-placeholder-val="{{ true }}">
+      <div data-screen-label="Agentes" style="padding-top:28px;display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px;">
+        <sc-for list="{{ agents }}" as="a" hint-placeholder-count="3">
+        <div style="background:#FFFFFF;border:1px solid #E4E4E0;padding:25px 26px 18px;display:flex;flex-direction:column;" style-hover="border-color:#9A9A95;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div style="display:flex;align-items:center;gap:7px;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6F6F6B;font-weight:600;"><span style="width:7px;height:7px;border-radius:50%;background:{{ a.dot }};display:inline-block;"></span>{{ a.status }}</div>
+            <div style="font-size:10.5px;letter-spacing:0.06em;border:1px solid #DDDDD9;padding:4px 9px;color:#5F5F5B;">{{ a.model }}</div>
+          </div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:23px;font-weight:600;color:#141414;">{{ a.name }}</div>
+          <div style="font-size:12.5px;color:#5F5F5B;line-height:1.55;margin:7px 0 14px;min-height:38px;">{{ a.desc }}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
+            <sc-for list="{{ a.chips }}" as="c">
+            <span style="font-size:10.5px;background:#F0F0EE;color:#54544F;padding:4px 8px;letter-spacing:0.03em;">{{ c }}</span>
+            </sc-for>
+          </div>
+          <div style="border-top:1px solid #ECECEA;margin-top:auto;padding-top:13px;display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-size:11px;color:#8F8F8A;">{{ a.meta }}</div>
+            <div style="display:flex;gap:14px;align-items:center;">
+              <sc-if value="{{ canAgentsRun }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ a.test }}" style="background:none;border:none;padding:0;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;color:#0C0C0C;cursor:pointer;" style-hover="color:#75756F;">Testar</button>
+              </sc-if>
+              <sc-if value="{{ canAgentsEdit }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ a.edit }}" style="background:none;border:none;padding:0;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;color:#0C0C0C;cursor:pointer;" style-hover="color:#75756F;">Configurar</button>
+              </sc-if>
+              <sc-if value="{{ canAgentsDelete }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ a.del }}" style="background:none;border:none;padding:0;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;color:#9A3B2E;cursor:pointer;" style-hover="color:#6E2418;">Eliminar</button>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+        </sc-for>
+      </div>
+      </sc-if>
+      <sc-if value="{{ isSkills }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Skills" style="padding-top:28px;">
+        <div style="background:#FFFFFF;border:1px solid #E4E4E0;">
+          <div style="display:grid;grid-template-columns:2.4fr 1fr 1.5fr 1fr 1fr;gap:16px;padding:13px 26px;font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#8F8F8A;border-bottom:1px solid #ECECEA;">
+            <div>Skill</div><div>Categoria</div><div>Utilizada em</div><div>Atualizada</div><div></div>
+          </div>
+          <sc-for list="{{ skills }}" as="s" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:2.4fr 1fr 1.5fr 1fr 1fr;gap:16px;padding:16px 26px;align-items:center;border-bottom:1px solid #F0F0EE;" style-hover="background:#FAFAF8;">
+            <div>
+              <div style="font-size:13.5px;font-weight:600;color:#161616;">{{ s.name }}</div>
+              <div style="font-size:12px;color:#80807B;margin-top:3px;line-height:1.45;">{{ s.desc }}</div>
+            </div>
+            <div><span style="font-size:10.5px;border:1px solid #DDDDD9;padding:4px 9px;color:#5F5F5B;letter-spacing:0.06em;">{{ s.cat }}</span></div>
+            <div style="font-size:12px;color:#80807B;">{{ s.usedBy }}</div>
+            <div style="font-size:12px;color:#80807B;">{{ s.updated }}</div>
+            <div style="display:flex;gap:14px;justify-content:flex-end;">
+              <sc-if value="{{ canSkillsEdit }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ s.edit }}" style="background:none;border:none;padding:0;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;color:#0C0C0C;cursor:pointer;" style-hover="color:#75756F;">Editar</button>
+              </sc-if>
+              <sc-if value="{{ canSkillsDelete }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ s.del }}" style="background:none;border:none;padding:0;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;color:#9A3B2E;cursor:pointer;" style-hover="color:#6E2418;">Eliminar</button>
+              </sc-if>
+            </div>
+          </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+      <sc-if value="{{ isWorkflows }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Workflows" style="padding-top:28px;display:grid;grid-template-columns:300px 1fr;gap:22px;align-items:start;">
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <sc-for list="{{ workflows }}" as="w" hint-placeholder-count="3">
+          <div onClick="{{ w.select }}" style="padding:18px 20px;cursor:pointer;background:{{ w.bg }};border:1px solid {{ w.border }};border-left:2px solid {{ w.edge }};" style-hover="border-color:#9A9A95;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:#141414;">{{ w.name }}</div>
+            <div style="font-size:11.5px;color:#80807B;margin-top:4px;">{{ w.meta }}</div>
+          </div>
+          </sc-for>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E4E4E0;padding:28px 32px 32px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:18px;">
+            <div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:27px;font-weight:600;color:#141414;">{{ wfName }}</div>
+              <div style="font-size:12px;color:#80807B;margin-top:5px;">{{ wfSub }}</div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;flex-shrink:0;">
+              <sc-if value="{{ canWfDelete }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ delWf }}" style="background:none;border:none;padding:0 4px;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;color:#9A3B2E;cursor:pointer;" style-hover="color:#6E2418;">Eliminar</button>
+              </sc-if>
+              <sc-if value="{{ canWfRun }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ runWf }}" style="background:#0C0C0C;color:#FFFFFF;border:none;padding:11px 20px;font-size:10.5px;letter-spacing:0.16em;text-transform:uppercase;font-weight:600;cursor:pointer;opacity:{{ runBtnOpacity }};" style-hover="background:#2E2E2C;">{{ runBtnLabel }}</button>
+              </sc-if>
+            </div>
+          </div>
+          <div style="margin-top:24px;padding:30px 26px;background:#FAFAF8;border:1px solid #ECECEA;display:flex;align-items:center;flex-wrap:wrap;row-gap:24px;">
+            <div style="width:184px;flex-shrink:0;background:#0C0C0C;padding:16px 18px 18px;">
+              <div style="font-size:8.5px;letter-spacing:0.22em;text-transform:uppercase;color:#A3A39E;font-weight:600;">Agente executor</div>
+              <sc-if value="{{ canWfEdit }}" hint-placeholder-val="{{ true }}">
+              <select value="{{ wfAgentId }}" onChange="{{ onWfAgent }}" style="width:100%;margin-top:10px;border:1px solid rgba(255,255,255,0.35);background:transparent;color:#F5F5F3;padding:7px 8px;font-size:12px;cursor:pointer;">
+                <sc-for list="{{ agentOptions }}" as="ao">
+                <option value="{{ ao.val }}" style="color:#1A1A1A;">{{ ao.name }}</option>
+                </sc-for>
+              </select>
+              </sc-if>
+              <sc-if value="{{ wfAgentReadOnly }}" hint-placeholder-val="{{ false }}">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:19px;color:#FFFFFF;margin-top:8px;">{{ wfAgentName }}</div>
+              </sc-if>
+              <div style="font-size:10px;color:rgba(255,255,255,0.55);margin-top:8px;">{{ wfAgentModel }}</div>
+            </div>
+            <sc-for list="{{ wfSteps }}" as="st" hint-placeholder-count="3">
+            <div style="display:contents;">
+              <div style="display:flex;align-items:center;flex-shrink:0;padding:0 3px;">
+                <div style="width:18px;height:1px;background:#BDBDB8;"></div>
+                <svg width="7" height="10" viewBox="0 0 7 10" fill="none" stroke="#9A9A95" stroke-width="1.2"><path d="M1 1l5 4-5 4"></path></svg>
+              </div>
+              <div style="width:184px;flex-shrink:0;background:#FFFFFF;border:1px solid {{ st.border }};padding:13px 15px;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;">
+                  <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#141414;">{{ st.num }}</div>
+                  <div style="font-size:8.5px;letter-spacing:0.16em;text-transform:uppercase;color:#8F8F8A;">{{ st.cat }}</div>
+                </div>
+                <div style="font-size:12.5px;font-weight:600;color:#161616;line-height:1.4;margin-top:3px;min-height:34px;">{{ st.name }}</div>
+                <sc-if value="{{ st.showSt }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:6px;font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase;font-weight:600;color:{{ st.stColor }};margin-top:8px;">
+                  <span style="width:6px;height:6px;border-radius:50%;background:{{ st.stColor }};animation:{{ st.anim }};"></span>{{ st.stLabel }}
+                </div>
+                </sc-if>
+                <sc-if value="{{ canWfEdit }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;gap:4px;margin-top:10px;padding-top:9px;border-top:1px solid #EEEEEC;">
+                  <button onClick="{{ st.left }}" title="Mover para tr&aacute;s" style="width:23px;height:23px;border:1px solid #DDDDD9;background:#FFFFFF;color:#54544F;cursor:pointer;opacity:{{ st.leftOp }};display:flex;align-items:center;justify-content:center;" style-hover="border-color:#0C0C0C;"><svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8.5 3L4.5 7l4 4"></path></svg></button>
+                  <button onClick="{{ st.right }}" title="Mover para a frente" style="width:23px;height:23px;border:1px solid #DDDDD9;background:#FFFFFF;color:#54544F;cursor:pointer;opacity:{{ st.rightOp }};display:flex;align-items:center;justify-content:center;" style-hover="border-color:#0C0C0C;"><svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M5.5 3l4 4-4 4"></path></svg></button>
+                  <button onClick="{{ st.remove }}" title="Remover passo" style="width:23px;height:23px;border:1px solid #DDDDD9;background:#FFFFFF;color:#9A3B2E;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-left:auto;" style-hover="border-color:#9A3B2E;"><svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 4l6 6M10 4l-6 6"></path></svg></button>
+                </div>
+                </sc-if>
+              </div>
+            </div>
+            </sc-for>
+            <sc-if value="{{ canWfEdit }}" hint-placeholder-val="{{ true }}">
+            <div style="display:contents;">
+              <div style="display:flex;align-items:center;flex-shrink:0;padding:0 3px;">
+                <div style="width:18px;height:1px;background:#BDBDB8;"></div>
+                <svg width="7" height="10" viewBox="0 0 7 10" fill="none" stroke="#9A9A95" stroke-width="1.2"><path d="M1 1l5 4-5 4"></path></svg>
+              </div>
+              <div style="width:184px;flex-shrink:0;border:1px dashed #C6C6C2;padding:9px 12px;">
+                <select value="" onChange="{{ onAddStep }}" style="width:100%;border:none;background:transparent;font-size:11.5px;color:#6F6F6B;cursor:pointer;padding:7px 0;">
+                  <option value="">+ Adicionar passo&hellip;</option>
+                  <sc-for list="{{ skillOptions }}" as="so">
+                  <option value="{{ so.val }}">{{ so.name }}</option>
+                  </sc-for>
+                </select>
+              </div>
+            </div>
+            </sc-if>
+            <sc-if value="{{ wfEmptyRO }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:12.5px;color:#8F8F8A;padding-left:16px;">Este workflow ainda n&atilde;o tem passos.</div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+      <sc-if value="{{ isApps }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Apps" style="margin-top:28px;border:1px dashed #CCCCC8;background:rgba(255,255,255,0.55);padding:92px 40px;text-align:center;">
+        <div style="width:52px;height:52px;border:1px solid #CFCFCB;margin:0 auto 26px;display:flex;align-items:center;justify-content:center;color:#75756F;">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9 2v14M2 9h14"></path></svg>
+        </div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:29px;font-weight:500;color:#141414;">Ainda sem apps</div>
+        <div style="font-size:13.5px;color:#6F6F6B;max-width:490px;margin:12px auto 0;line-height:1.65;">Ferramentas internas &agrave; medida &mdash; relat&oacute;rios de despesas, controlo de comiss&otilde;es, entrada de contratos &mdash; ser&atilde;o constru&iacute;das aqui sobre os seus agentes e workflows.</div>
+        <div style="margin-top:26px;font-size:10px;letter-spacing:0.22em;color:#75756F;text-transform:uppercase;font-weight:600;">Brevemente</div>
+      </div>
+      </sc-if>
+      <sc-if value="{{ isUsers }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Utilizadores" style="padding-top:28px;">
+        <div style="background:#FFFFFF;border:1px solid #E4E4E0;">
+          <div style="display:grid;grid-template-columns:2.2fr 1.4fr 1fr 1.1fr 1.9fr;gap:16px;padding:13px 26px;font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#8F8F8A;border-bottom:1px solid #ECECEA;">
+            <div>Utilizador</div><div>Perfil</div><div>Estado</div><div>&Uacute;ltimo acesso</div><div></div>
+          </div>
+          <sc-for list="{{ users }}" as="u" hint-placeholder-count="4">
+          <div style="display:grid;grid-template-columns:2.2fr 1.4fr 1fr 1.1fr 1.9fr;gap:16px;padding:14px 26px;align-items:center;border-bottom:1px solid #F0F0EE;" style-hover="background:#FAFAF8;">
+            <div style="display:flex;align-items:center;gap:13px;min-width:0;">
+              <div style="width:34px;height:34px;border:1px solid #DDDDD9;background:#FAFAF8;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:14px;color:#141414;flex-shrink:0;">{{ u.init }}</div>
+              <div style="min-width:0;">
+                <div style="font-size:13.5px;font-weight:600;color:#161616;">{{ u.name }} <span style="font-size:10px;color:#75756F;font-weight:500;">{{ u.meTag }}</span></div>
+                <div style="font-size:11.5px;color:#80807B;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ u.email }}</div>
+              </div>
+            </div>
+            <div>
+              <sc-if value="{{ canUsersEdit }}" hint-placeholder-val="{{ true }}">
+              <select value="{{ u.roleId }}" onChange="{{ u.changeRole }}" style="border:1px solid #D6D6D2;background:#FFFFFF;padding:7px 9px;font-size:12px;color:#1A1A1A;max-width:180px;">
+                <sc-for list="{{ roleOptions }}" as="ro">
+                <option value="{{ ro.val }}">{{ ro.name }}</option>
+                </sc-for>
+              </select>
+              </sc-if>
+              <sc-if value="{{ usersRoleReadOnly }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:12.5px;color:#54544F;">{{ u.roleName }}</span>
+              </sc-if>
+            </div>
+            <div style="display:flex;align-items:center;gap:7px;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;color:#6F6F6B;"><span style="width:7px;height:7px;border-radius:50%;background:{{ u.stColor }};display:inline-block;"></span>{{ u.status }}</div>
+            <div style="font-size:12px;color:#80807B;">{{ u.last }}</div>
+            <div style="display:flex;gap:13px;justify-content:flex-end;flex-wrap:wrap;">
+              <sc-if value="{{ canUsersReset }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ u.resetPw }}" style="background:none;border:none;padding:0;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;color:#0C0C0C;cursor:pointer;white-space:nowrap;" style-hover="color:#75756F;">Repor palavra-passe</button>
+              </sc-if>
+              <sc-if value="{{ u.showSuspend }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ u.suspend }}" style="background:none;border:none;padding:0;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;color:#5F5F5B;cursor:pointer;" style-hover="color:#161616;">{{ u.suspendLabel }}</button>
+              </sc-if>
+              <sc-if value="{{ u.showDel }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ u.del }}" style="background:none;border:none;padding:0;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;color:#9A3B2E;cursor:pointer;" style-hover="color:#6E2418;">Eliminar</button>
+              </sc-if>
+            </div>
+          </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+      <sc-if value="{{ isRoles }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Perfis e Permissoes" style="padding-top:28px;display:grid;grid-template-columns:300px 1fr;gap:22px;align-items:start;">
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <sc-for list="{{ roles }}" as="r" hint-placeholder-count="3">
+          <div onClick="{{ r.select }}" style="padding:18px 20px;cursor:pointer;background:{{ r.bg }};border:1px solid {{ r.border }};border-left:2px solid {{ r.edge }};" style-hover="border-color:#9A9A95;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:#141414;">{{ r.name }}</div>
+              <sc-if value="{{ r.system }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:8.5px;letter-spacing:0.2em;text-transform:uppercase;color:#75756F;font-weight:600;border:1px solid #C9C9C4;padding:3px 6px;">Sistema</span>
+              </sc-if>
+            </div>
+            <div style="font-size:11.5px;color:#80807B;margin-top:5px;line-height:1.5;">{{ r.desc }}</div>
+            <div style="font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:#8F8F8A;margin-top:9px;font-weight:600;">{{ r.count }}</div>
+          </div>
+          </sc-for>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E4E4E0;padding:30px 34px 34px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:18px;">
+            <div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:27px;font-weight:600;color:#141414;">{{ selRoleName }}</div>
+              <div style="font-size:12.5px;color:#6F6F6B;margin-top:5px;max-width:480px;line-height:1.5;">{{ selRoleDesc }}</div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:center;flex-shrink:0;">
+              <sc-if value="{{ showRoleEdit }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ editSelRole }}" style="background:none;border:none;padding:0;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;color:#0C0C0C;cursor:pointer;" style-hover="color:#75756F;">Renomear</button>
+              </sc-if>
+              <sc-if value="{{ showRoleDelete }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ delSelRole }}" style="background:none;border:none;padding:0;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;color:#9A3B2E;cursor:pointer;" style-hover="color:#6E2418;">Eliminar</button>
+              </sc-if>
+            </div>
+          </div>
+          <div style="margin-top:26px;display:flex;align-items:baseline;justify-content:space-between;gap:16px;">
+            <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#8F8F8A;">Permiss&otilde;es</div>
+            <div style="font-size:11px;color:#9A9A94;">{{ permHint }}</div>
+          </div>
+          <sc-for list="{{ permModules }}" as="pm" hint-placeholder-count="6">
+          <div style="border-top:1px solid #EEEEEC;margin-top:13px;padding-top:13px;display:grid;grid-template-columns:190px 1fr;gap:10px;align-items:start;">
+            <div style="font-size:13px;font-weight:600;color:#1D1D1B;padding-top:5px;">{{ pm.label }}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;">
+              <sc-for list="{{ pm.actions }}" as="pa">
+              <div onClick="{{ pa.toggle }}" style="display:flex;align-items:center;gap:7px;padding:6px 11px;border:1px solid {{ pa.border }};background:{{ pa.bg }};cursor:{{ pa.cursor }};font-size:11.5px;color:{{ pa.color }};user-select:none;opacity:{{ pa.opacity }};">
+                <span style="width:12px;height:12px;border:1px solid {{ pa.boxBorder }};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <sc-if value="{{ pa.on }}" hint-placeholder-val="{{ false }}">
+                  <svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="#FFFFFF" stroke-width="1.6"><path d="M1.5 5.5L4 8L8.5 2.5"></path></svg>
+                  </sc-if>
+                </span>
+                {{ pa.label }}
+              </div>
+              </sc-for>
+            </div>
+          </div>
+          </sc-for>
+          <div style="border-top:1px solid #EEEEEC;margin-top:18px;padding-top:16px;">
+            <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#8F8F8A;margin-bottom:10px;">Utilizadores com este perfil</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;">
+              <sc-for list="{{ selRoleUsers }}" as="ru">
+              <span style="font-size:11.5px;background:#F0F0EE;color:#54544F;padding:5px 10px;">{{ ru }}</span>
+              </sc-for>
+              <sc-if value="{{ selRoleNoUsers }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:12px;color:#9A9A94;">Ainda sem utilizadores atribu&iacute;dos.</span>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Definicoes" style="padding-top:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(390px,1fr));gap:22px;align-items:start;">
+        <div style="background:#FFFFFF;border:1px solid #E4E4E0;padding:28px 30px 30px;">
+          <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#8F8F8A;">Fornecedor de LLM</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;">
+            <sc-for list="{{ providers }}" as="pv" hint-placeholder-count="3">
+            <div onClick="{{ pv.pick }}" style="border:1px solid {{ pv.border }};background:{{ pv.bg }};padding:15px 10px;cursor:pointer;text-align:center;user-select:none;" style-hover="border-color:#8F8F8A;">
+              <div style="font-size:13.5px;font-weight:600;color:{{ pv.color }};">{{ pv.name }}</div>
+              <div style="font-size:10px;color:{{ pv.sub }};margin-top:3px;letter-spacing:0.06em;">{{ pv.subName }}</div>
+            </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:22px;">
+            <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:8px;">Modelo predefinido</div>
+            <select value="{{ seModel }}" onChange="{{ onSeModel }}" disabled="{{ seDisabled }}" style="width:100%;border:1px solid #D6D6D2;background:#FFFFFF;padding:11px 12px;font-size:13.5px;color:#1A1A1A;">
+              <sc-for list="{{ seModelOptions }}" as="sm">
+              <option value="{{ sm.val }}">{{ sm.val }}</option>
+              </sc-for>
+            </select>
+            <div style="font-size:11px;color:#9A9A94;margin-top:8px;line-height:1.5;">Aplicado a novos agentes &mdash; cada agente pode ser ajustado individualmente.</div>
+          </div>
+          <div style="margin-top:22px;">
+            <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:8px;">Chave de API &middot; {{ seProviderName }}</div>
+            <div style="display:flex;gap:8px;">
+              <input type="password" value="{{ seKey }}" onChange="{{ onSeKey }}" disabled="{{ seDisabled }}" placeholder="Colar chave de API" style="flex:1;border:1px solid #D6D6D2;background:#FFFFFF;padding:11px 12px;font-size:13px;color:#1A1A1A;min-width:0;">
+              <sc-if value="{{ canSettingsEdit }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ testKey }}" style="background:transparent;color:#1A1A1A;border:1px solid #C6C6C2;padding:0 16px;font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;font-weight:600;cursor:pointer;" style-hover="border-color:#0C0C0C;">Testar</button>
+              </sc-if>
+            </div>
+            <div style="display:flex;align-items:center;gap:7px;margin-top:9px;font-size:11px;color:{{ seKeyStColor }};"><span style="width:6px;height:6px;border-radius:50%;background:{{ seKeyStColor }};display:inline-block;"></span>{{ seKeyStatus }}</div>
+          </div>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E4E4E0;padding:28px 30px 30px;">
+          <div style="font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#8F8F8A;">Cr&eacute;ditos &amp; limites</div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:16px;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#141414;">{{ seUsedStr }}</div>
+            <div style="font-size:11.5px;color:#80807B;">de {{ seBudgetStr }} este m&ecirc;s &middot; {{ sePctStr }}</div>
+          </div>
+          <div style="height:6px;background:#EEEEEC;margin-top:10px;"><div style="height:6px;width:{{ sePctW }};background:{{ seBarColor }};transition:width 0.3s ease;"></div></div>
+          <div style="margin-top:16px;display:flex;flex-direction:column;gap:9px;">
+            <sc-for list="{{ agentCosts }}" as="ac" hint-placeholder-count="3">
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;">
+                <div style="font-size:12.5px;color:#161616;">{{ ac.name }}</div>
+                <div style="font-size:11.5px;color:#80807B;">{{ ac.cost }}</div>
+              </div>
+              <div style="height:3px;background:#F0F0EE;margin-top:5px;"><div style="height:3px;width:{{ ac.pctW }};background:#8F8F8A;"></div></div>
+            </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:22px;">
+            <div style="flex:1;">
+              <div style="font-size:11px;color:#9A9A94;margin-bottom:6px;">Or&ccedil;amento mensal (&euro;)</div>
+              <input type="number" name="budget" value="{{ seBudget }}" onChange="{{ onSetting }}" disabled="{{ seDisabled }}" style="width:100%;border:1px solid #D6D6D2;background:#FFFFFF;padding:10px 12px;font-size:13px;color:#1A1A1A;">
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:11px;color:#9A9A94;margin-bottom:6px;">Alerta a (%)</div>
+              <input type="number" name="alertPct" value="{{ seAlert }}" onChange="{{ onSetting }}" disabled="{{ seDisabled }}" style="width:100%;border:1px solid #D6D6D2;background:#FFFFFF;padding:10px 12px;font-size:13px;color:#1A1A1A;">
+            </div>
+          </div>
+          <div onClick="{{ toggleHardStop }}" style="display:flex;align-items:center;gap:9px;padding:9px 12px;border:1px solid {{ hsBorder }};background:{{ hsBg }};color:{{ hsColor }};font-size:12px;cursor:pointer;user-select:none;margin-top:14px;">
+            <span style="width:12px;height:12px;border:1px solid {{ hsBoxBorder }};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <sc-if value="{{ hsOn }}" hint-placeholder-val="{{ false }}">
+              <svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="#FFFFFF" stroke-width="1.6"><path d="M1.5 5.5L4 8L8.5 2.5"></path></svg>
+              </sc-if>
+            </span>
+            Suspender execu&ccedil;&otilde;es ao atingir o or&ccedil;amento
+          </div>
+          <sc-if value="{{ canSettingsEdit }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ saveSettings }}" style="background:#0C0C0C;color:#FFFFFF;border:none;padding:12px 24px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;font-weight:600;cursor:pointer;margin-top:20px;" style-hover="background:#2E2E2C;">Guardar defini&ccedil;&otilde;es</button>
+          </sc-if>
+        </div>
+      </div>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</sc-if>
+<sc-if value="{{ inLogin }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Login" style="position:fixed;inset:0;display:flex;z-index:50;">
+  <div style="flex:1.05;background:#0C0C0C;color:#F5F5F3;display:flex;flex-direction:column;justify-content:space-between;padding:52px 60px;">
+    <div style="font-size:10px;letter-spacing:0.26em;text-transform:uppercase;color:#A3A39E;font-weight:600;">Portugal &middot; Plataforma Interna</div>
+    <div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:56px;font-weight:500;color:#FFFFFF;line-height:1;">Sotheby&rsquo;s</div>
+      <div style="width:44px;height:1px;background:rgba(255,255,255,0.7);margin:26px 0;"></div>
+      <div style="font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:rgba(255,255,255,0.85);font-weight:500;">International Realty &middot; AI Back Office</div>
+      <div style="font-size:13.5px;color:rgba(255,255,255,0.55);max-width:390px;line-height:1.75;margin-top:22px;">Os agentes, skills e workflows por detr&aacute;s da experi&ecirc;ncia do cliente &mdash; criados, sequenciados e geridos num s&oacute; lugar.</div>
+    </div>
+    <div style="font-size:10px;letter-spacing:0.08em;color:rgba(255,255,255,0.35);">&copy; 2026 &middot; Uso interno &middot; Sotheby&rsquo;s International Realty&reg; &eacute; uma marca registada da Sotheby&rsquo;s International Realty Affiliates LLC.</div>
+  </div>
+  <div style="flex:1;background:#F4F4F2;display:flex;align-items:center;justify-content:center;padding:40px;overflow-y:auto;">
+    <div style="width:362px;">
+      <div style="font-size:10px;letter-spacing:0.24em;text-transform:uppercase;color:#75756F;font-weight:600;">Iniciar sess&atilde;o</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:31px;font-weight:500;color:#141414;margin:10px 0 34px;">Bem-vindo de volta</div>
+      <div style="margin-bottom:24px;">
+        <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:6px;">E-mail</div>
+        <input value="{{ loginEmail }}" onChange="{{ onLoginEmail }}" onKeyDown="{{ onLoginKey }}" placeholder="nome@sothebysrealty.pt" style="background:transparent;border:none;border-bottom:1px solid #C6C6C2;padding:10px 2px;font-size:14px;width:100%;color:#161616;">
+      </div>
+      <div>
+        <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:6px;">Palavra-passe</div>
+        <input type="password" value="{{ loginPassword }}" onChange="{{ onLoginPassword }}" onKeyDown="{{ onLoginKey }}" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" style="background:transparent;border:none;border-bottom:1px solid #C6C6C2;padding:10px 2px;font-size:14px;width:100%;color:#161616;">
+      </div>
+      <button onClick="{{ doLogin }}" style="width:100%;background:#0C0C0C;color:#FFFFFF;border:none;padding:14px;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;font-weight:600;cursor:pointer;margin-top:34px;" style-hover="background:#2E2E2C;">Entrar</button>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:18px;">
+        <a href="#" style="font-size:11.5px;color:#6F6F6B;border-bottom:1px solid #D8D8D4;padding-bottom:1px;">Esqueceu a palavra-passe?</a>
+        <div style="font-size:10px;color:#9A9A94;">Acesso reservado a colaboradores</div>
+      </div>
+    </div>
+  </div>
+</div>
+</sc-if>
+<sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ closeDrawer }}" style="position:fixed;inset:0;background:rgba(10,10,10,0.38);z-index:60;animation:dcFade 0.2s ease;"></div>
+<div style="position:fixed;top:0;right:0;bottom:0;width:462px;max-width:92vw;background:#FBFBF9;border-left:1px solid #E4E4E0;z-index:61;display:flex;flex-direction:column;animation:dcDrawer 0.28s ease;">
+  <div style="padding:26px 30px 22px;border-bottom:1px solid #E8E8E6;display:flex;justify-content:space-between;align-items:flex-start;">
+    <div>
+      <div style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#75756F;font-weight:600;margin-bottom:8px;">{{ drawerKicker }}</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#141414;">{{ drawerTitle }}</div>
+    </div>
+    <button onClick="{{ closeDrawer }}" style="background:none;border:none;padding:4px;color:#8F8F8A;cursor:pointer;" style-hover="color:#161616;"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"></path></svg></button>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:26px 30px;">
+    <div style="margin-bottom:20px;">
+      <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:8px;">Nome</div>
+      <input name="name" value="{{ fName }}" onChange="{{ onForm }}" style="width:100%;border:1px solid #D6D6D2;background:#FFFFFF;padding:11px 12px;font-size:13.5px;color:#1A1A1A;">
+    </div>
+    <sc-if value="{{ dUser }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-bottom:20px;">
+      <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:8px;">E-mail</div>
+      <input name="email" value="{{ fEmail }}" onChange="{{ onForm }}" placeholder="nome@sothebysrealty.pt" style="width:100%;border:1px solid #D6D6D2;background:#FFFFFF;padding:11px 12px;font-size:13.5px;color:#1A1A1A;">
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:8px;">Perfil</div>
+      <select name="roleId" value="{{ fRoleId }}" onChange="{{ onForm }}" style="width:100%;border:1px solid #D6D6D2;background:#FFFFFF;padding:11px 12px;font-size:13.5px;color:#1A1A1A;">
+        <sc-for list="{{ roleOptions }}" as="ro2">
+        <option value="{{ ro2.val }}">{{ ro2.name }}</option>
+        </sc-for>
+      </select>
+    </div>
+    <div style="font-size:12px;color:#80807B;line-height:1.6;border:1px solid #ECECEA;background:#FFFFFF;padding:12px 14px;">Ser&aacute; enviado um convite com uma liga&ccedil;&atilde;o para definir a palavra-passe.</div>
+    </sc-if>
+    <sc-if value="{{ dAgent }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-bottom:20px;">
+      <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:8px;">Modelo</div>
+      <select name="model" value="{{ fModel }}" onChange="{{ onForm }}" style="width:100%;border:1px solid #D6D6D2;background:#FFFFFF;padding:11px 12px;font-size:13.5px;color:#1A1A1A;">
+        <sc-for list="{{ modelOptions }}" as="mo">
+        <option value="{{ mo.val }}">{{ mo.val }}</option>
+        </sc-for>
+      </select>
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+        <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;">Temperatura</div>
+        <div style="font-size:12.5px;color:#141414;font-weight:600;">{{ fTemp }}</div>
+      </div>
+      <input type="range" name="temp" min="0" max="1" step="0.1" value="{{ fTemp }}" onChange="{{ onForm }}" style="width:100%;accent-color:#0C0C0C;">
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:8px;">Descri&ccedil;&atilde;o</div>
+      <textarea name="desc" value="{{ fDesc }}" onChange="{{ onForm }}" rows="2" style="width:100%;border:1px solid #D6D6D2;background:#FFFFFF;padding:11px 12px;font-size:13px;color:#1A1A1A;line-height:1.5;"></textarea>
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:8px;">Prompt de sistema</div>
+      <textarea name="prompt" value="{{ fPrompt }}" onChange="{{ onForm }}" rows="4" style="width:100%;border:1px solid #D6D6D2;background:#FFFFFF;padding:11px 12px;font-size:13px;color:#1A1A1A;line-height:1.55;"></textarea>
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:10px;">Skills associadas</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;">
+        <sc-for list="{{ drawerSkills }}" as="ds">
+        <div onClick="{{ ds.toggle }}" style="padding:7px 12px;border:1px solid {{ ds.border }};background:{{ ds.bg }};color:{{ ds.color }};font-size:12px;cursor:pointer;user-select:none;">{{ ds.name }}</div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:10px;">Conhecimento &middot; ficheiros</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;">
+        <sc-for list="{{ drawerKnowledge }}" as="dk">
+        <div onClick="{{ dk.toggle }}" style="padding:7px 12px;border:1px solid {{ dk.border }};background:{{ dk.bg }};color:{{ dk.color }};font-size:12px;cursor:pointer;user-select:none;">{{ dk.name }}</div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:10px;">Ferramentas &amp; APIs</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;">
+        <sc-for list="{{ drawerTools }}" as="dt">
+        <div onClick="{{ dt.toggle }}" style="padding:7px 12px;border:1px solid {{ dt.border }};background:{{ dt.bg }};color:{{ dt.color }};font-size:12px;cursor:pointer;user-select:none;">{{ dt.name }}</div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="margin-bottom:8px;">
+      <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:10px;">Limites de utiliza&ccedil;&atilde;o</div>
+      <div style="display:flex;gap:10px;">
+        <div style="flex:1;">
+          <div style="font-size:11px;color:#8F8F8A;margin-bottom:6px;">Execu&ccedil;&otilde;es / dia</div>
+          <input type="number" name="limitRuns" value="{{ fLimitRuns }}" onChange="{{ onForm }}" style="width:100%;border:1px solid #D6D6D2;background:#FFFFFF;padding:10px 12px;font-size:13px;color:#1A1A1A;">
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:11px;color:#8F8F8A;margin-bottom:6px;">Or&ccedil;amento mensal (&euro;)</div>
+          <input type="number" name="limitBudget" value="{{ fLimitBudget }}" onChange="{{ onForm }}" style="width:100%;border:1px solid #D6D6D2;background:#FFFFFF;padding:10px 12px;font-size:13px;color:#1A1A1A;">
+        </div>
+      </div>
+    </div>
+    </sc-if>
+    <sc-if value="{{ dSkill }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-bottom:20px;">
+      <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:8px;">Categoria</div>
+      <select name="cat" value="{{ fCat }}" onChange="{{ onForm }}" style="width:100%;border:1px solid #D6D6D2;background:#FFFFFF;padding:11px 12px;font-size:13.5px;color:#1A1A1A;">
+        <sc-for list="{{ catOptions }}" as="co">
+        <option value="{{ co.val }}">{{ co.val }}</option>
+        </sc-for>
+      </select>
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:8px;">Descri&ccedil;&atilde;o</div>
+      <textarea name="desc" value="{{ fDesc }}" onChange="{{ onForm }}" rows="2" style="width:100%;border:1px solid #D6D6D2;background:#FFFFFF;padding:11px 12px;font-size:13px;color:#1A1A1A;line-height:1.5;"></textarea>
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:8px;">Instru&ccedil;&otilde;es</div>
+      <textarea name="instr" value="{{ fInstr }}" onChange="{{ onForm }}" rows="5" placeholder="O que esta skill faz, passo a passo, e o formato de sa&iacute;da esperado." style="width:100%;border:1px solid #D6D6D2;background:#FFFFFF;padding:11px 12px;font-size:13px;color:#1A1A1A;line-height:1.55;"></textarea>
+    </div>
+    </sc-if>
+    <sc-if value="{{ dWorkflow }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-bottom:20px;">
+      <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:8px;">Agente executor</div>
+      <select name="agentId" value="{{ fAgentId }}" onChange="{{ onForm }}" style="width:100%;border:1px solid #D6D6D2;background:#FFFFFF;padding:11px 12px;font-size:13.5px;color:#1A1A1A;">
+        <sc-for list="{{ agentOptions }}" as="ao2">
+        <option value="{{ ao2.val }}">{{ ao2.name }}</option>
+        </sc-for>
+      </select>
+    </div>
+    <div style="font-size:12px;color:#80807B;line-height:1.6;border:1px solid #ECECEA;background:#FFFFFF;padding:12px 14px;">Os passos s&atilde;o adicionados e ordenados no canvas do workflow depois de criado.</div>
+    </sc-if>
+    <sc-if value="{{ dRole }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-bottom:20px;">
+      <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;color:#6F6F6B;margin-bottom:8px;">Descri&ccedil;&atilde;o</div>
+      <textarea name="desc" value="{{ fDesc }}" onChange="{{ onForm }}" rows="3" style="width:100%;border:1px solid #D6D6D2;background:#FFFFFF;padding:11px 12px;font-size:13px;color:#1A1A1A;line-height:1.5;"></textarea>
+    </div>
+    <div style="font-size:12px;color:#80807B;line-height:1.6;border:1px solid #ECECEA;background:#FFFFFF;padding:12px 14px;">As permiss&otilde;es s&atilde;o atribu&iacute;das a&ccedil;&atilde;o a a&ccedil;&atilde;o na matriz, depois de o perfil ser guardado.</div>
+    </sc-if>
+    <sc-if value="{{ drawerErr }}" hint-placeholder-val="{{ false }}">
+    <div style="font-size:12.5px;color:#9A3B2E;margin-top:16px;">{{ drawerErr }}</div>
+    </sc-if>
+  </div>
+  <div style="padding:20px 30px;border-top:1px solid #E8E8E6;display:flex;gap:10px;">
+    <button onClick="{{ saveDrawer }}" style="background:#0C0C0C;color:#FFFFFF;border:none;padding:12px 24px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;font-weight:600;cursor:pointer;" style-hover="background:#2E2E2C;">{{ drawerSaveLabel }}</button>
+    <button onClick="{{ closeDrawer }}" style="background:transparent;color:#54544F;border:1px solid #C6C6C2;padding:12px 22px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;font-weight:600;cursor:pointer;" style-hover="border-color:#0C0C0C;color:#0C0C0C;">Cancelar</button>
+  </div>
+</div>
+</sc-if>
+<sc-if value="{{ confirmOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;background:rgba(10,10,10,0.42);z-index:70;display:flex;align-items:center;justify-content:center;animation:dcFade 0.18s ease;">
+  <div style="background:#FBFBF9;border:1px solid #E4E4E0;padding:32px 36px;width:400px;max-width:88vw;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#141414;">Confirme, por favor</div>
+    <div style="font-size:13.5px;color:#54544F;line-height:1.6;margin:12px 0 26px;">{{ confirmText }}</div>
+    <div style="display:flex;gap:10px;">
+      <button onClick="{{ confirmYes }}" style="background:#7E2F23;color:#FFFFFF;border:none;padding:11px 22px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;font-weight:600;cursor:pointer;" style-hover="background:#63241A;">Eliminar</button>
+      <button onClick="{{ confirmNo }}" style="background:transparent;color:#54544F;border:1px solid #C6C6C2;padding:11px 20px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;font-weight:600;cursor:pointer;" style-hover="border-color:#0C0C0C;color:#0C0C0C;">Cancelar</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+<div style="position:fixed;right:26px;bottom:24px;z-index:80;display:flex;flex-direction:column;gap:10px;">
+  <sc-for list="{{ toasts }}" as="t" hint-placeholder-count="0">
+  <div style="background:#101010;color:#F5F5F3;padding:13px 18px;font-size:12.5px;border-left:2px solid #EDEDEA;animation:dcToast 0.25s ease;max-width:380px;box-shadow:0 10px 28px rgba(0,0,0,0.22);line-height:1.5;">{{ t.msg }}</div>
+  </sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startLoggedIn&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Demo&quot;}, &quot;workflowStepDelay&quot;: {&quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 1000, &quot;min&quot;: 300, &quot;max&quot;: 2500, &quot;step&quot;: 100, &quot;unit&quot;: &quot;ms&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Demo&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.CAT = [
+      { id: 'agents', label: 'Agentes', actions: [['view', 'Ver'], ['create', 'Criar'], ['edit', 'Configurar'], ['run', 'Executar testes'], ['delete', 'Eliminar']] },
+      { id: 'skills', label: 'Skills', actions: [['view', 'Ver'], ['create', 'Criar'], ['edit', 'Editar'], ['delete', 'Eliminar']] },
+      { id: 'workflows', label: 'Workflows', actions: [['view', 'Ver'], ['create', 'Criar'], ['edit', 'Editar e reordenar'], ['run', 'Executar'], ['delete', 'Eliminar']] },
+      { id: 'apps', label: 'Apps', actions: [['view', 'Ver'], ['create', 'Criar']] },
+      { id: 'users', label: 'Utilizadores', actions: [['view', 'Ver'], ['create', 'Convidar'], ['edit', 'Editar e atribuir perfis'], ['reset', 'Repor palavras-passe'], ['delete', 'Eliminar']] },
+      { id: 'roles', label: 'Perfis e permiss\u00F5es', actions: [['view', 'Ver'], ['create', 'Criar'], ['edit', 'Editar permiss\u00F5es'], ['delete', 'Eliminar']] },
+      { id: 'settings', label: 'Defini\u00E7\u00F5es', actions: [['view', 'Ver'], ['edit', 'Editar']] },
+    ];
+    this.KNOW = [
+      { id: 1, name: 'Guia de Estilo da Marca.pdf' }, { id: 2, name: 'Feed do Portef\u00F3lio de Im\u00F3veis' },
+      { id: 3, name: 'FAQ de Clientes.docx' }, { id: 4, name: 'Tabela de Pre\u00E7os 2026.xlsx' },
+    ];
+    this.TOOLS = [
+      { id: 1, name: 'Pesquisa Web' }, { id: 2, name: 'CRM' }, { id: 3, name: 'Base de Im\u00F3veis' },
+      { id: 4, name: 'E-mail' }, { id: 5, name: 'Calend\u00E1rio' },
+    ];
+    this.MODELS = {
+      anthropic: ['Claude Opus 4.1', 'Claude Sonnet 4.5', 'Claude Haiku 4.5'],
+      openai: ['GPT-5', 'GPT-5 mini', 'GPT-4.1'],
+      gemini: ['Gemini 2.5 Pro', 'Gemini 2.5 Flash'],
+    };
+    const all = {};
+    this.CAT.forEach(m => m.actions.forEach(a => { all[m.id + '.' + a[0]] = true; }));
+    const mk = list => { const p = {}; list.forEach(k => { p[k] = true; }); return p; };
+    this.state = {
+      screen: (props && props.startLoggedIn) ? 'app' : 'login',
+      section: 'agents', navOpen: true,
+      loginEmail: '', loginPassword: '',
+      currentUserId: 1,
+      roles: [
+        { id: 1, name: 'Administrador', desc: 'Acesso sem restri\u00E7\u00F5es a todos os m\u00F3dulos e a\u00E7\u00F5es.', system: true, perms: all },
+        { id: 2, name: 'Gestor de Opera\u00E7\u00F5es de IA', desc: 'Cria e executa agentes, skills e workflows. Apenas leitura em utilizadores.', system: false, perms: mk(['agents.view', 'agents.create', 'agents.edit', 'agents.run', 'agents.delete', 'skills.view', 'skills.create', 'skills.edit', 'skills.delete', 'workflows.view', 'workflows.create', 'workflows.edit', 'workflows.run', 'workflows.delete', 'apps.view', 'users.view']) },
+        { id: 3, name: 'Consultor', desc: 'Visibilidade s\u00F3 de leitura do patrim\u00F3nio de IA. Sem administra\u00E7\u00E3o.', system: false, perms: mk(['agents.view', 'skills.view', 'workflows.view', 'apps.view']) },
+      ],
+      users: [
+        { id: 1, name: 'Mariana Costa', email: 'mariana.costa@sothebysrealty.pt', roleId: 1, status: 'Ativo', last: 'Hoje, 09:12' },
+        { id: 2, name: 'Duarte Almeida', email: 'duarte.almeida@sothebysrealty.pt', roleId: 2, status: 'Ativo', last: 'Hoje, 08:40' },
+        { id: 3, name: 'Sofia Mendes', email: 'sofia.mendes@sothebysrealty.pt', roleId: 3, status: 'Ativo', last: 'Ontem, 18:03' },
+        { id: 4, name: 'Ricardo Faria', email: 'ricardo.faria@sothebysrealty.pt', roleId: 3, status: 'Convidado', last: '\u2014' },
+      ],
+      skills: [
+        { id: 1, name: 'Descri\u00E7\u00E3o de Im\u00F3vel \u2014 PT & EN', cat: 'Conte\u00FAdo', desc: 'Texto editorial de listagem a partir da ficha do im\u00F3vel.', instr: '', updated: '12 ago 2026' },
+        { id: 2, name: 'Tradu\u00E7\u00E3o de Listagens', cat: 'Conte\u00FAdo', desc: 'Tradu\u00E7\u00E3o EN \u21C4 PT afinada ao tom da marca.', instr: '', updated: '12 ago 2026' },
+        { id: 3, name: 'Resumo de Vendas Compar\u00E1veis', cat: 'An\u00E1lise', desc: 'Tabela de compar\u00E1veis e narrativa de pre\u00E7o por freguesia.', instr: '', updated: '02 ago 2026' },
+        { id: 4, name: 'Classifica\u00E7\u00E3o de Leads', cat: 'CRM', desc: 'Pontua contactos por or\u00E7amento, inten\u00E7\u00E3o e prazo.', instr: '', updated: '28 jul 2026' },
+        { id: 5, name: 'Rascunho de E-mail ao Cliente', cat: 'Comunica\u00E7\u00E3o', desc: 'E-mails de seguimento personalizados, no tom da marca.', instr: '', updated: '21 jul 2026' },
+        { id: 6, name: 'Legendas e Alt Text de Fotografia', cat: 'Media', desc: 'Legendas editoriais para fotografia de im\u00F3veis.', instr: '', updated: '15 jul 2026' },
+      ],
+      agents: [
+        { id: 1, name: 'Redator de Listagens', model: 'Claude Sonnet 4.5', temp: 0.7, status: 'Ativo', desc: 'Transforma fichas de im\u00F3veis em textos de listagem prontos a publicar, em ambas as l\u00EDnguas.', skillIds: [1, 2, 6], knowIds: [1, 2], toolIds: [3], limitRuns: 200, limitBudget: 150, runs: 412, prompt: 'Escreves para uma marca de imobili\u00E1rio de luxo em Portugal. Tom: s\u00F3brio, preciso, editorial.' },
+        { id: 2, name: 'Concierge de Leads', model: 'Claude Opus 4.1', temp: 0.3, status: 'Ativo', desc: 'Qualifica contactos recebidos e redige a primeira resposta personalizada.', skillIds: [4, 5], knowIds: [3], toolIds: [2, 4], limitRuns: 500, limitBudget: 300, runs: 1268, prompt: '\u00C9s a primeira linha de contacto para pedidos de im\u00F3veis de alto valor.' },
+        { id: 3, name: 'Analista de Mercado', model: 'GPT-5', temp: 0.2, status: 'Pausado', desc: 'Prepara briefings semanais de pre\u00E7os e an\u00E1lises compar\u00E1veis por regi\u00E3o.', skillIds: [3, 5], knowIds: [2, 4], toolIds: [1, 3], limitRuns: 50, limitBudget: 100, runs: 96, prompt: 'Produzes briefings de mercado concisos e fundamentados em dados.' },
+      ],
+      workflows: [
+        { id: 1, name: 'Lan\u00E7amento de Novo Im\u00F3vel', agentId: 1, steps: [1, 2, 6, 5] },
+        { id: 2, name: 'Triagem de Leads', agentId: 2, steps: [4, 5] },
+        { id: 3, name: 'Briefing Semanal de Mercado', agentId: 3, steps: [3, 5] },
+      ],
+      selWorkflowId: 1, selRoleId: 1,
+      settings: { provider: 'anthropic', model: 'Claude Sonnet 4.5', keys: { anthropic: 'sk-ant-api03-9f2Kv7', openai: '', gemini: '' }, budget: 750, alertPct: 80, hardStop: true },
+      drawer: null, confirm: null, toasts: [], run: null, nextId: 100,
+    };
+  }
+  t(msg) {
+    const id = Math.random();
+    this.setState(s => ({ toasts: [...s.toasts, { id, msg }] }));
+    setTimeout(() => this.setState(s => ({ toasts: s.toasts.filter(x => x.id !== id) })), 3400);
+  }
+  me() { return this.state.users.find(u => u.id === this.state.currentUserId); }
+  roleOf(u) { return this.state.roles.find(r => r.id === u.roleId); }
+  can(p) { const u = this.me(); if (!u) return false; const r = this.roleOf(u); return !!(r && r.perms[p]); }
+  go(sec) { this.setState({ section: sec }); }
+  login() {
+    const e = this.state.loginEmail.trim().toLowerCase();
+    const u = this.state.users.find(x => x.email.toLowerCase() === e && x.status === 'Ativo') || this.state.users[0];
+    const r = this.roleOf(u);
+    const order = ['agents', 'skills', 'workflows', 'apps', 'users', 'roles'];
+    const first = order.find(s => r.perms[s + '.view']) || 'agents';
+    this.setState({ screen: 'app', currentUserId: u.id, section: first, loginEmail: '', loginPassword: '', run: null });
+  }
+  askConfirm(text, cb) { this.setState({ confirm: { text, cb } }); }
+  openDrawer(type, id) {
+    const S = this.state; let f = {};
+    if (type === 'agent') { const a = id ? S.agents.find(x => x.id === id) : null; f = a ? { name: a.name, model: a.model, temp: String(a.temp), desc: a.desc, prompt: a.prompt, skillIds: [...a.skillIds], knowIds: [...a.knowIds], toolIds: [...a.toolIds], limitRuns: String(a.limitRuns), limitBudget: String(a.limitBudget) } : { name: '', model: S.settings.model, temp: '0.7', desc: '', prompt: '', skillIds: [], knowIds: [], toolIds: [], limitRuns: '100', limitBudget: '100' }; }
+    if (type === 'skill') { const k = id ? S.skills.find(x => x.id === id) : null; f = k ? { name: k.name, cat: k.cat, desc: k.desc, instr: k.instr || '' } : { name: '', cat: 'Conte\u00FAdo', desc: '', instr: '' }; }
+    if (type === 'user') { f = { name: '', email: '', roleId: String(S.roles[S.roles.length - 1].id) }; }
+    if (type === 'workflow') { f = { name: '', agentId: String(S.agents[0] ? S.agents[0].id : '') }; }
+    if (type === 'role') { const r = id ? S.roles.find(x => x.id === id) : null; f = r ? { name: r.name, desc: r.desc } : { name: '', desc: '' }; }
+    this.setState({ drawer: { type, id: id || null, f, err: '' } });
+  }
+  saveDrawer() {
+    const d = this.state.drawer; if (!d) return;
+    const f = d.f, nm = (f.name || '').trim();
+    const err = m => this.setState(s => ({ drawer: { ...s.drawer, err: m } }));
+    if (!nm) { err('O nome \u00E9 obrigat\u00F3rio.'); return; }
+    if (d.type === 'user') {
+      const em = (f.email || '').trim();
+      if (!em || em.indexOf('@') < 1 || em.indexOf('.') < 0) { err('\u00C9 necess\u00E1rio um endere\u00E7o de e-mail v\u00E1lido.'); return; }
+      this.setState(s => ({ users: [...s.users, { id: s.nextId, name: nm, email: em, roleId: Number(f.roleId), status: 'Convidado', last: '\u2014' }], nextId: s.nextId + 1, drawer: null }));
+      this.t('Convite enviado para ' + em + '.');
+      return;
+    }
+    if (d.type === 'agent') {
+      const rec = { name: nm, model: f.model, temp: Number(f.temp), desc: (f.desc || '').trim(), prompt: f.prompt || '', skillIds: f.skillIds, knowIds: f.knowIds, toolIds: f.toolIds, limitRuns: Number(f.limitRuns) || 0, limitBudget: Number(f.limitBudget) || 0 };
+      if (d.id) { this.setState(s => ({ agents: s.agents.map(a => a.id === d.id ? { ...a, ...rec } : a), drawer: null })); this.t('Agente atualizado.'); }
+      else { this.setState(s => ({ agents: [...s.agents, { id: s.nextId, status: 'Ativo', runs: 0, ...rec }], nextId: s.nextId + 1, drawer: null })); this.t('Agente \u00AB' + nm + '\u00BB criado.'); }
+      return;
+    }
+    if (d.type === 'skill') {
+      const rec = { name: nm, cat: f.cat, desc: (f.desc || '').trim(), instr: f.instr || '', updated: '21 ago 2026' };
+      if (d.id) { this.setState(s => ({ skills: s.skills.map(k => k.id === d.id ? { ...k, ...rec } : k), drawer: null })); this.t('Skill atualizada.'); }
+      else { this.setState(s => ({ skills: [...s.skills, { id: s.nextId, ...rec }], nextId: s.nextId + 1, drawer: null })); this.t('Skill \u00AB' + nm + '\u00BB criada.'); }
+      return;
+    }
+    if (d.type === 'workflow') {
+      this.setState(s => ({ workflows: [...s.workflows, { id: s.nextId, name: nm, agentId: Number(f.agentId), steps: [] }], selWorkflowId: s.nextId, nextId: s.nextId + 1, drawer: null }));
+      this.t('Workflow criado \u2014 adicione os passos no canvas.');
+      return;
+    }
+    if (d.type === 'role') {
+      if (d.id) { this.setState(s => ({ roles: s.roles.map(r => r.id === d.id ? { ...r, name: nm, desc: (f.desc || '').trim() } : r), drawer: null })); this.t('Perfil atualizado.'); }
+      else { this.setState(s => ({ roles: [...s.roles, { id: s.nextId, name: nm, desc: (f.desc || '').trim(), system: false, perms: {} }], selRoleId: s.nextId, nextId: s.nextId + 1, drawer: null, section: 'roles' })); this.t('Perfil criado \u2014 atribua as permiss\u00F5es abaixo.'); }
+      return;
+    }
+  }
+  moveStep(wfId, i, d) {
+    this.setState(s => ({
+      workflows: s.workflows.map(w => {
+        if (w.id !== wfId) return w;
+        const st = [...w.steps], j = i + d;
+        if (j < 0 || j >= st.length) return w;
+        const t = st[i]; st[i] = st[j]; st[j] = t;
+        return { ...w, steps: st };
+      })
+    }));
+  }
+  runWorkflow(wf) {
+    if (this.state.run) return;
+    if (!wf.steps.length) { this.t('Adicione pelo menos um passo primeiro.'); return; }
+    const delay = (this.props && this.props.workflowStepDelay) || 1000;
+    this.setState({ run: { wfId: wf.id, statuses: wf.steps.map(() => 'pending') } });
+    const step = i => {
+      this.setState({ run: { wfId: wf.id, statuses: wf.steps.map((x, j) => j < i ? 'done' : j === i ? 'running' : 'pending') } });
+      setTimeout(() => {
+        if (i + 1 < wf.steps.length) step(i + 1);
+        else {
+          this.setState({ run: { wfId: wf.id, statuses: wf.steps.map(() => 'done') } });
+          setTimeout(() => { this.setState({ run: null }); this.t('\u00AB' + wf.name + '\u00BB executado \u2014 ' + wf.steps.length + (wf.steps.length === 1 ? ' passo conclu\u00EDdo.' : ' passos conclu\u00EDdos.')); }, 900);
+        }
+      }, delay);
+    };
+    step(0);
+  }
+  renderVals() {
+    const S = this.state;
+    const ME = this.me();
+    const MYROLE = ME ? this.roleOf(ME) : null;
+    const can = p => this.can(p);
+    const initials = n => n.split(' ').map(x => x[0]).slice(0, 2).join('').toUpperCase();
+    const skillById = id => S.skills.find(k => k.id === id);
+    const meta = {
+      agents: { group: 'Plataforma', title: 'Agentes', desc: 'Personas de IA configuradas \u2014 cada uma com um modelo, um prompt de sistema e um conjunto de skills associadas.' },
+      skills: { group: 'Plataforma', title: 'Skills', desc: 'Capacidades de IA reutiliz\u00E1veis. As skills associam-se a agentes e sequenciam-se em workflows.' },
+      workflows: { group: 'Plataforma', title: 'Workflows', desc: 'Sequ\u00EAncias de skills executadas de ponta a ponta por um agente, ao toque de um bot\u00E3o.' },
+      apps: { group: 'Plataforma', title: 'Apps', desc: 'Ferramentas internas \u00E0 medida, constru\u00EDdas sobre agentes e workflows.' },
+      users: { group: 'Administra\u00E7\u00E3o', title: 'Utilizadores', desc: 'Todas as pessoas com acesso ao back office e o perfil que define o que cada uma pode fazer.' },
+      roles: { group: 'Administra\u00E7\u00E3o', title: 'Perfis & Permiss\u00F5es', desc: 'Cada a\u00E7\u00E3o \u00E9 uma permiss\u00E3o individual. Componha permiss\u00F5es em perfis e atribua perfis aos utilizadores.' },
+      settings: { group: 'Administra\u00E7\u00E3o', title: 'Defini\u00E7\u00F5es', desc: 'Fornecedor de LLM, modelo predefinido, chaves de API e controlo de cr\u00E9ditos da plataforma.' },
+    };
+    const m = meta[S.section] || meta.agents;
+    const navItem = (sec, perm) => ({
+      show: can(perm), go: () => this.go(sec),
+      bg: S.section === sec ? 'rgba(255,255,255,0.07)' : 'transparent',
+      edge: S.section === sec ? '#FFFFFF' : 'transparent',
+      color: S.section === sec ? '#FFFFFF' : 'rgba(255,255,255,0.6)',
+    });
+    const agents = S.agents.map(a => ({
+      name: a.name, model: a.model, desc: a.desc, status: a.status,
+      dot: a.status === 'Ativo' ? '#3E7A5E' : '#A8863C',
+      chips: a.skillIds.map(id => { const k = skillById(id); return k ? k.name : null; }).filter(Boolean),
+      meta: a.runs + ' exec. \u00B7 temp ' + String(a.temp).replace('.', ',') + ' \u00B7 ' + a.limitBudget + '\u20AC/m\u00EAs',
+      test: () => this.t('Teste de \u00AB' + a.name + '\u00BB em fila no ' + a.model + '.'),
+      edit: () => this.openDrawer('agent', a.id),
+      del: () => this.askConfirm('Eliminar o agente \u00AB' + a.name + '\u00BB? Os workflows que o usam ficar\u00E3o sem agente.', () => { this.setState(s => ({ agents: s.agents.filter(x => x.id !== a.id) })); this.t('Agente eliminado.'); }),
+    }));
+    const usedIn = k => {
+      const na = S.agents.filter(a => a.skillIds.indexOf(k.id) >= 0).length;
+      const nw = S.workflows.filter(w => w.steps.indexOf(k.id) >= 0).length;
+      return na + (na === 1 ? ' agente \u00B7 ' : ' agentes \u00B7 ') + nw + (nw === 1 ? ' workflow' : ' workflows');
+    };
+    const skills = S.skills.map(k => ({
+      name: k.name, cat: k.cat, desc: k.desc, updated: k.updated, usedBy: usedIn(k),
+      edit: () => this.openDrawer('skill', k.id),
+      del: () => this.askConfirm('Eliminar a skill \u00AB' + k.name + '\u00BB? Ser\u00E1 removida de todos os agentes e workflows.', () => {
+        this.setState(s => ({
+          skills: s.skills.filter(x => x.id !== k.id),
+          agents: s.agents.map(a => ({ ...a, skillIds: a.skillIds.filter(i => i !== k.id) })),
+          workflows: s.workflows.map(w => ({ ...w, steps: w.steps.filter(i => i !== k.id) })),
+        }));
+        this.t('Skill eliminada.');
+      }),
+    }));
+    const wf = S.workflows.find(w => w.id === S.selWorkflowId) || S.workflows[0];
+    const workflows = S.workflows.map(w => {
+      const ag = S.agents.find(a => a.id === w.agentId);
+      const act = wf && w.id === wf.id;
+      return {
+        name: w.name, meta: w.steps.length + (w.steps.length === 1 ? ' passo \u00B7 ' : ' passos \u00B7 ') + (ag ? ag.name : 'Sem agente'),
+        select: () => this.setState({ selWorkflowId: w.id }),
+        bg: act ? '#FFFFFF' : 'transparent', border: act ? '#D6D6D2' : '#E4E4E0', edge: act ? '#141414' : 'transparent',
+      };
+    });
+    const running = (S.run && wf && S.run.wfId === wf.id) ? S.run : null;
+    const wfAgent = wf ? S.agents.find(a => a.id === wf.agentId) : null;
+    const wfSteps = wf ? wf.steps.map((sid, i) => {
+      const k = skillById(sid);
+      const st = running ? running.statuses[i] : 'idle';
+      return {
+        num: (i + 1 < 10 ? '0' : '') + (i + 1), name: k ? k.name : '(skill eliminada)', cat: k ? k.cat : '\u2014',
+        showSt: st !== 'idle',
+        stLabel: st === 'running' ? 'A executar' : st === 'done' ? 'Conclu\u00EDdo' : 'Em fila',
+        stColor: st === 'running' ? '#141414' : st === 'done' ? '#3E7A5E' : '#8F8F8A',
+        anim: st === 'running' ? 'dcPulse 1.1s ease-in-out infinite' : 'none',
+        border: st === 'running' ? '#141414' : st === 'done' ? '#9DBFA9' : '#E0E0DC',
+        leftOp: i === 0 ? '0.3' : '1', rightOp: i === wf.steps.length - 1 ? '0.3' : '1',
+        left: () => this.moveStep(wf.id, i, -1), right: () => this.moveStep(wf.id, i, 1),
+        remove: () => this.setState(s => ({ workflows: s.workflows.map(w => w.id === wf.id ? { ...w, steps: w.steps.filter((_, j) => j !== i) } : w) })),
+      };
+    }) : [];
+    const selRole = S.roles.find(r => r.id === S.selRoleId) || S.roles[0];
+    const roles = S.roles.map(r => {
+      const n = S.users.filter(u => u.roleId === r.id).length;
+      const act = selRole && r.id === selRole.id;
+      return {
+        name: r.name, desc: r.desc, system: r.system,
+        count: n + (n === 1 ? ' utilizador' : ' utilizadores'),
+        select: () => this.setState({ selRoleId: r.id }),
+        bg: act ? '#FFFFFF' : 'transparent', border: act ? '#D6D6D2' : '#E4E4E0', edge: act ? '#141414' : 'transparent',
+      };
+    });
+    const locked = !selRole || selRole.system || !can('roles.edit');
+    const permModules = this.CAT.map(mod => ({
+      label: mod.label,
+      actions: mod.actions.map(a => {
+        const key = mod.id + '.' + a[0];
+        const on = !!(selRole && selRole.perms[key]);
+        return {
+          label: a[1], on,
+          border: on ? '#0C0C0C' : '#D6D6D2', bg: on ? '#0C0C0C' : '#FFFFFF',
+          color: on ? '#FFFFFF' : '#54544F', boxBorder: on ? 'rgba(255,255,255,0.6)' : '#C2C2BE',
+          cursor: locked ? 'default' : 'pointer', opacity: locked && !on ? '0.45' : '1',
+          toggle: () => {
+            if (locked) { if (selRole && selRole.system) this.t('O perfil Administrador est\u00E1 bloqueado e tem sempre todas as permiss\u00F5es.'); return; }
+            this.setState(s => ({ roles: s.roles.map(r => r.id === selRole.id ? { ...r, perms: { ...r.perms, [key]: !on } } : r) }));
+          },
+        };
+      }),
+    }));
+    const selRoleUsers = selRole ? S.users.filter(u => u.roleId === selRole.id).map(u => u.name) : [];
+    const users = S.users.map(u => {
+      const r = this.roleOf(u);
+      return {
+        name: u.name, email: u.email, init: initials(u.name), roleName: r ? r.name : '\u2014', roleId: String(u.roleId),
+        status: u.status, last: u.last, meTag: u.id === S.currentUserId ? '(voc\u00EA)' : '',
+        stColor: u.status === 'Ativo' ? '#3E7A5E' : u.status === 'Convidado' ? '#A8863C' : '#9A3B2E',
+        changeRole: e => {
+          const rid = Number(e.target.value);
+          const rr = S.roles.find(x => x.id === rid);
+          this.setState(s => ({ users: s.users.map(x => x.id === u.id ? { ...x, roleId: rid } : x) }));
+          this.t(u.name + ' \u00E9 agora ' + (rr ? rr.name : '') + '.');
+        },
+        resetPw: () => this.t('Liga\u00E7\u00E3o de reposi\u00E7\u00E3o de palavra-passe enviada para ' + u.email + '.'),
+        showSuspend: can('users.edit') && u.id !== S.currentUserId,
+        suspendLabel: u.status === 'Suspenso' ? 'Reativar' : 'Suspender',
+        suspend: () => {
+          const to = u.status === 'Suspenso' ? 'Ativo' : 'Suspenso';
+          this.setState(s => ({ users: s.users.map(x => x.id === u.id ? { ...x, status: to } : x) }));
+          this.t('Conta de ' + u.name + (to === 'Suspenso' ? ' suspensa.' : ' reativada.'));
+        },
+        showDel: can('users.delete') && u.id !== S.currentUserId,
+        del: () => this.askConfirm('Eliminar ' + u.name + '? O acesso \u00E9 revogado de imediato.', () => { this.setState(s => ({ users: s.users.filter(x => x.id !== u.id) })); this.t('Utilizador eliminado.'); }),
+      };
+    });
+    const d = S.drawer;
+    const dTitles = { agent: d && d.id ? 'Configurar agente' : 'Novo agente', skill: d && d.id ? 'Editar skill' : 'Nova skill', user: 'Convidar utilizador', workflow: 'Novo workflow', role: d && d.id ? 'Renomear perfil' : 'Novo perfil' };
+    const chipify = (list, fIds, key) => (d && d.type === 'agent') ? list.map(it => {
+      const on = d.f[key].indexOf(it.id) >= 0;
+      return {
+        name: it.name, border: on ? '#0C0C0C' : '#D6D6D2', bg: on ? '#0C0C0C' : '#FFFFFF', color: on ? '#FFFFFF' : '#54544F',
+        toggle: () => this.setState(s => { const cur = s.drawer.f[key]; const nx = on ? cur.filter(i => i !== it.id) : [...cur, it.id]; return { drawer: { ...s.drawer, f: { ...s.drawer.f, [key]: nx } } }; }),
+      };
+    }) : [];
+    const PROVNAME = { anthropic: 'Anthropic', openai: 'OpenAI', gemini: 'Google' };
+    const seUsed = S.agents.reduce((n, a) => n + Math.round(a.runs * 0.18), 0);
+    const sePct = Math.min(100, Math.round(seUsed / (S.settings.budget || 1) * 100));
+    const agentCosts = S.agents.map(a => { const c = Math.round(a.runs * 0.18); return { name: a.name, cost: c + ' \u20AC', pctW: (seUsed ? Math.round(c / seUsed * 100) : 0) + '%' }; });
+    return {
+      inApp: S.screen === 'app', inLogin: S.screen === 'login',
+      loginEmail: S.loginEmail, loginPassword: S.loginPassword,
+      onLoginEmail: e => this.setState({ loginEmail: e.target.value }),
+      onLoginPassword: e => this.setState({ loginPassword: e.target.value }),
+      onLoginKey: e => { if (e.key === 'Enter') this.login(); },
+      doLogin: () => this.login(),
+      myName: ME ? ME.name : '', myRole: MYROLE ? MYROLE.name : '', myInitials: ME ? initials(ME.name) : '',
+      signOut: () => this.setState({ screen: 'login', run: null, drawer: null, confirm: null }),
+      navAgents: navItem('agents', 'agents.view'), navSkills: navItem('skills', 'skills.view'),
+      navWorkflows: navItem('workflows', 'workflows.view'), navApps: navItem('apps', 'apps.view'),
+      navUsers: navItem('users', 'users.view'), navRoles: navItem('roles', 'roles.view'),
+      navSettings: navItem('settings', 'settings.view'),
+      showAdminGroup: can('users.view') || can('roles.view') || can('settings.view'),
+      showAdminLabel: (can('users.view') || can('roles.view') || can('settings.view')) && S.navOpen,
+      showAdminRule: (can('users.view') || can('roles.view') || can('settings.view')) && !S.navOpen,
+      navExpanded: S.navOpen, navCollapsed: !S.navOpen,
+      sbWidth: S.navOpen ? '252px' : '64px',
+      navItemPad: S.navOpen ? '10px 16px' : '10px 0',
+      navJustify: S.navOpen ? 'flex-start' : 'center',
+      brandPad: S.navOpen ? '30px 24px 24px' : '24px 10px 20px',
+      footPad: S.navOpen ? '18px 20px' : '16px 8px',
+      footDir: S.navOpen ? 'row' : 'column',
+      toggleNav: () => this.setState(s => ({ navOpen: !s.navOpen })),
+      sectionGroup: m.group, sectionTitle: m.title, sectionDesc: m.desc,
+      isAgents: S.section === 'agents', isSkills: S.section === 'skills', isWorkflows: S.section === 'workflows',
+      isApps: S.section === 'apps', isUsers: S.section === 'users', isRoles: S.section === 'roles', isSettings: S.section === 'settings',
+      showNewAgentBtn: S.section === 'agents' && can('agents.create'),
+      showNewSkillBtn: S.section === 'skills' && can('skills.create'),
+      showNewWorkflowBtn: S.section === 'workflows' && can('workflows.create'),
+      showInviteBtn: S.section === 'users' && can('users.create'),
+      showNewRoleBtn: S.section === 'roles' && can('roles.create'),
+      canAgentsRun: can('agents.run'), canAgentsEdit: can('agents.edit'), canAgentsDelete: can('agents.delete'),
+      canSkillsEdit: can('skills.edit'), canSkillsDelete: can('skills.delete'),
+      canWfEdit: can('workflows.edit'), canWfRun: can('workflows.run'), canWfDelete: can('workflows.delete'),
+      canUsersEdit: can('users.edit'), usersRoleReadOnly: !can('users.edit'),
+      canUsersReset: can('users.reset'),
+      openNewAgent: () => this.openDrawer('agent'), openNewSkill: () => this.openDrawer('skill'),
+      openNewWorkflow: () => this.openDrawer('workflow'), openInviteUser: () => this.openDrawer('user'),
+      openNewRole: () => this.openDrawer('role'),
+      agents, skills, workflows, users, roles,
+      wfName: wf ? wf.name : 'Sem workflows',
+      wfSub: wf ? (wf.steps.length + (wf.steps.length === 1 ? ' passo em sequ\u00EAncia' : ' passos em sequ\u00EAncia')) : '',
+      wfSteps, wfEmptyRO: !!wf && wf.steps.length === 0 && !can('workflows.edit'),
+      wfAgentId: wf ? String(wf.agentId) : '', wfAgentName: wfAgent ? wfAgent.name : 'Sem agente',
+      wfAgentModel: wfAgent ? wfAgent.model : '', wfAgentReadOnly: !can('workflows.edit'),
+      onWfAgent: e => { const aid = Number(e.target.value); this.setState(s => ({ workflows: s.workflows.map(w => w.id === s.selWorkflowId ? { ...w, agentId: aid } : w) })); },
+      onAddStep: e => { const sid = Number(e.target.value); if (!sid) return; this.setState(s => ({ workflows: s.workflows.map(w => w.id === s.selWorkflowId ? { ...w, steps: [...w.steps, sid] } : w) })); },
+      runWf: () => { if (wf) this.runWorkflow(wf); },
+      runBtnLabel: running ? 'A executar\u2026' : 'Executar workflow', runBtnOpacity: running ? '0.55' : '1',
+      delWf: () => { if (wf) this.askConfirm('Eliminar o workflow \u00AB' + wf.name + '\u00BB?', () => { this.setState(s => { const rest = s.workflows.filter(w => w.id !== wf.id); return { workflows: rest, selWorkflowId: rest[0] ? rest[0].id : 0 }; }); this.t('Workflow eliminado.'); }); },
+      agentOptions: S.agents.map(a => ({ val: String(a.id), name: a.name })),
+      skillOptions: S.skills.map(k => ({ val: String(k.id), name: k.name + ' \u2014 ' + k.cat })),
+      roleOptions: S.roles.map(r => ({ val: String(r.id), name: r.name })),
+      modelOptions: [].concat(this.MODELS.anthropic, this.MODELS.openai, this.MODELS.gemini).map(v => ({ val: v })),
+      catOptions: [{ val: 'Conte\u00FAdo' }, { val: 'An\u00E1lise' }, { val: 'CRM' }, { val: 'Comunica\u00E7\u00E3o' }, { val: 'Media' }, { val: 'Jur\u00EDdico' }],
+      selRoleName: selRole ? selRole.name : '', selRoleDesc: selRole ? selRole.desc : '',
+      showRoleEdit: !!selRole && !selRole.system && can('roles.edit'),
+      showRoleDelete: !!selRole && !selRole.system && can('roles.delete'),
+      editSelRole: () => { if (selRole) this.openDrawer('role', selRole.id); },
+      delSelRole: () => {
+        if (!selRole) return;
+        const n = S.users.filter(u => u.roleId === selRole.id).length;
+        if (n) { this.t('Reatribua primeiro ' + (n === 1 ? 'o utilizador deste perfil.' : 'os ' + n + ' utilizadores deste perfil.')); return; }
+        this.askConfirm('Eliminar o perfil \u00AB' + selRole.name + '\u00BB?', () => { this.setState(s => { const rest = s.roles.filter(r => r.id !== selRole.id); return { roles: rest, selRoleId: rest[0].id }; }); this.t('Perfil eliminado.'); });
+      },
+      permHint: locked ? (selRole && selRole.system ? 'Perfil de sistema \u2014 as permiss\u00F5es est\u00E3o bloqueadas.' : 'S\u00F3 de leitura \u2014 falta-lhe a permiss\u00E3o \u00ABEditar permiss\u00F5es\u00BB.') : 'Clique numa permiss\u00E3o para a alternar. As altera\u00E7\u00F5es aplicam-se de imediato.',
+      permModules, selRoleUsers, selRoleNoUsers: selRoleUsers.length === 0,
+      canSettingsEdit: can('settings.edit'), seDisabled: !can('settings.edit'),
+      providers: [['Claude', 'Anthropic', 'anthropic'], ['GPT', 'OpenAI', 'openai'], ['Gemini', 'Google', 'gemini']].map(p => {
+        const act = S.settings.provider === p[2];
+        return {
+          name: p[0], subName: p[1],
+          border: act ? '#0C0C0C' : '#DDDDD9', bg: act ? '#0C0C0C' : '#FFFFFF',
+          color: act ? '#FFFFFF' : '#161616', sub: act ? 'rgba(255,255,255,0.55)' : '#8F8F8A',
+          pick: () => { if (!this.can('settings.edit')) return; this.setState(s => ({ settings: { ...s.settings, provider: p[2], model: this.MODELS[p[2]][0] } })); },
+        };
+      }),
+      seProviderName: PROVNAME[S.settings.provider],
+      seModel: S.settings.model,
+      seModelOptions: this.MODELS[S.settings.provider].map(v => ({ val: v })),
+      onSeModel: e => { const v = e.target.value; this.setState(s => ({ settings: { ...s.settings, model: v } })); },
+      seKey: S.settings.keys[S.settings.provider] || '',
+      onSeKey: e => { const v = e.target.value; this.setState(s => ({ settings: { ...s.settings, keys: { ...s.settings.keys, [s.settings.provider]: v } } })); },
+      seKeyStatus: (S.settings.keys[S.settings.provider] || '').length > 7 ? 'Chave configurada' : 'Sem chave \u2014 execu\u00E7\u00F5es indispon\u00EDveis neste fornecedor',
+      seKeyStColor: (S.settings.keys[S.settings.provider] || '').length > 7 ? '#3E7A5E' : '#A8863C',
+      testKey: () => this.t('Liga\u00E7\u00E3o a ' + PROVNAME[this.state.settings.provider] + ' verificada com sucesso.'),
+      seUsedStr: seUsed + ' \u20AC', seBudgetStr: S.settings.budget + ' \u20AC', sePctStr: sePct + '%', sePctW: sePct + '%',
+      seBarColor: sePct >= 100 ? '#9A3B2E' : sePct >= S.settings.alertPct ? '#A8863C' : '#0C0C0C',
+      agentCosts,
+      seBudget: String(S.settings.budget), seAlert: String(S.settings.alertPct),
+      onSetting: e => { const k = e.target.name, v = Number(e.target.value) || 0; this.setState(s => ({ settings: { ...s.settings, [k]: v } })); },
+      hsOn: S.settings.hardStop,
+      hsBorder: S.settings.hardStop ? '#0C0C0C' : '#D6D6D2', hsBg: S.settings.hardStop ? '#0C0C0C' : '#FFFFFF', hsColor: S.settings.hardStop ? '#FFFFFF' : '#54544F',
+      hsBoxBorder: S.settings.hardStop ? 'rgba(255,255,255,0.6)' : '#C2C2BE',
+      toggleHardStop: () => { if (!this.can('settings.edit')) return; this.setState(s => ({ settings: { ...s.settings, hardStop: !s.settings.hardStop } })); },
+      saveSettings: () => this.t('Defini\u00E7\u00F5es guardadas.'),
+      drawerOpen: !!d,
+      drawerKicker: d ? (d.type === 'user' ? 'Gest\u00E3o de utilizadores' : d.type === 'role' ? 'Perfis & permiss\u00F5es' : 'Plataforma') : '',
+      drawerTitle: d ? dTitles[d.type] : '', drawerErr: d ? d.err : '',
+      drawerSaveLabel: d && d.id ? 'Guardar altera\u00E7\u00F5es' : d && d.type === 'user' ? 'Enviar convite' : 'Criar',
+      dAgent: !!d && d.type === 'agent', dSkill: !!d && d.type === 'skill', dUser: !!d && d.type === 'user',
+      dWorkflow: !!d && d.type === 'workflow', dRole: !!d && d.type === 'role',
+      fName: d ? (d.f.name || '') : '', fEmail: d ? (d.f.email || '') : '', fRoleId: d ? (d.f.roleId || '') : '',
+      fModel: d ? (d.f.model || '') : '', fTemp: d ? (d.f.temp || '0.7') : '0.7', fDesc: d ? (d.f.desc || '') : '',
+      fPrompt: d ? (d.f.prompt || '') : '', fInstr: d ? (d.f.instr || '') : '', fCat: d ? (d.f.cat || '') : '',
+      fAgentId: d ? (d.f.agentId || '') : '',
+      fLimitRuns: d ? (d.f.limitRuns || '') : '', fLimitBudget: d ? (d.f.limitBudget || '') : '',
+      onForm: e => { const k = e.target.name, v = e.target.value; this.setState(s => ({ drawer: { ...s.drawer, f: { ...s.drawer.f, [k]: v } } })); },
+      drawerSkills: chipify(S.skills, null, 'skillIds'),
+      drawerKnowledge: chipify(this.KNOW, null, 'knowIds'),
+      drawerTools: chipify(this.TOOLS, null, 'toolIds'),
+      saveDrawer: () => this.saveDrawer(),
+      closeDrawer: () => this.setState({ drawer: null }),
+      confirmOpen: !!S.confirm, confirmText: S.confirm ? S.confirm.text : '',
+      confirmYes: () => { const c = S.confirm; this.setState({ confirm: null }); if (c) c.cb(); },
+      confirmNo: () => this.setState({ confirm: null }),
+      toasts: S.toasts,
+    };
+  }
+}
+</script>
+</body>
+</html>
