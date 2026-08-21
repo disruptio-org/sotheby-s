@@ -7,6 +7,10 @@ export const messages = {
     nameRequired: 'O nome é obrigatório.',
     emailInvalid: 'É necessário um endereço de e-mail válido.',
     credentialsRequired: 'Introduza o e-mail e a palavra-passe.',
+    passwordFieldsRequired: 'Preencha os três campos.',
+    passwordTooShort: (min: number) =>
+      `A nova palavra-passe tem de ter pelo menos ${min} caracteres.`,
+    passwordMismatch: 'A confirmação não coincide com a nova palavra-passe.',
   },
 
   agentCreated: (name: string) => `Agente ${quote(name)} criado.`,

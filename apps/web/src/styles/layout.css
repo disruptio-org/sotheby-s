@@ -219,7 +219,20 @@
   margin-top: 2px;
 }
 
-.sidebar__signout {
+/* Change password, then sign out. Side by side when the sidebar is open;
+   stacked when it is collapsed, where there is no room for a row. */
+.sidebar__acts {
+  display: flex;
+  gap: 2px;
+}
+
+.sidebar--collapsed .sidebar__acts {
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.sidebar__act {
   background: none;
   border: none;
   padding: 4px;
@@ -228,7 +241,7 @@
   display: flex;
 }
 
-.sidebar__signout:hover {
+.sidebar__act:hover {
   color: var(--on-dark);
 }
 

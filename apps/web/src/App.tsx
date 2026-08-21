@@ -1,5 +1,6 @@
 import { firstVisibleSection, permissionKey, type SectionId } from '@sothebys/domain';
 import { useEffect, type ComponentType } from 'react';
+import { ChangePasswordDialog } from './components/ChangePasswordDialog';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { Drawer } from './components/Drawer';
 import { PageHeader } from './components/PageHeader';
@@ -71,6 +72,7 @@ export function App() {
       <Drawer />
       <ConfirmDialog />
       <PasswordDialog />
+      <ChangePasswordDialog />
       <Toasts />
     </div>
   );

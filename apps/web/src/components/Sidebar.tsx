@@ -7,6 +7,7 @@ import {
   AppsIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  KeyIcon,
   RolesIcon,
   SettingsIcon,
   SignOutIcon,
@@ -119,15 +120,26 @@ export function Sidebar() {
             <div className="sidebar__role">{myRole?.name}</div>
           </div>
         )}
-        <button
-          type="button"
-          className="sidebar__signout"
-          title="Terminar sessão"
-          aria-label="Terminar sessão"
-          onClick={() => void actions.signOut()}
-        >
-          <SignOutIcon />
-        </button>
+        <div className="sidebar__acts">
+          <button
+            type="button"
+            className="sidebar__act"
+            title="Alterar palavra-passe"
+            aria-label="Alterar palavra-passe"
+            onClick={() => dispatch({ type: 'passwordChange/open' })}
+          >
+            <KeyIcon />
+          </button>
+          <button
+            type="button"
+            className="sidebar__act"
+            title="Terminar sessão"
+            aria-label="Terminar sessão"
+            onClick={() => void actions.signOut()}
+          >
+            <SignOutIcon />
+          </button>
+        </div>
       </div>
     </nav>
   );

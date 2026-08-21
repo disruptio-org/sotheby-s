@@ -71,6 +71,7 @@ export const createInitialState = (): AppState => ({
   nextToastId: 1,
 
   revealedPassword: null,
+  passwordChange: null,
 });
 
 const withToast = (state: AppState, message: string, tone: Toast['tone'] = 'info'): AppState => {
@@ -353,6 +354,37 @@ export const reducer = (state: AppState, action: AppAction): AppState => {
 
     case 'password/hide':
       return { ...state, revealedPassword: null };
+
+    case 'passwordChange/open':
+      return {
+        ...state,
+        passwordChange: { current: '', next: '', confirm: '', error: '', busy: false },
+      };
+
+    // Closing drops the whole object, so the typed passwords leave the store.
+    case 'passwordChange/close':
+      return { ...state, passwordChange: null };
+
+    case 'passwordChange/setField':
+      return state.passwordChange
+        ? {
+            ...state,
+            passwordChange: { ...state.passwordChange, [action.field]: action.value, error: '' },
+          }
+        : state;
+
+    case 'passwordChange/busy':
+      return state.passwordChange
+        ? { ...state, passwordChange: { ...state.passwordChange, busy: action.value } }
+        : state;
+
+    case 'passwordChange/error':
+      return state.passwordChange
+        ? {
+            ...state,
+            passwordChange: { ...state.passwordChange, error: action.message, busy: false },
+          }
+        : state;
   }
 };
 

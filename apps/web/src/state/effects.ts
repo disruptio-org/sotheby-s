@@ -1,4 +1,5 @@
 import {
+  PASSWORD_MIN_LENGTH,
   PROVIDER_NAME,
   type AgentDto,
   type PermissionKey,
@@ -115,6 +116,51 @@ export const makeActions = (dispatch: Send, read: Read) => {
         await endpoints.session.logout();
       } finally {
         dispatch({ type: 'session/signedOut' });
+      }
+    },
+
+    /**
+     * The three checks below are the same ones the server makes, run first so a
+     * typo never leaves the browser. The server stays the authority on whether
+     * the current password is right and whether the new one repeats it.
+     */
+    changePassword: async (): Promise<void> => {
+      const form = read.current.passwordChange;
+      if (!form || form.busy) return;
+
+      if (!form.current || !form.next || !form.confirm) {
+        dispatch({
+          type: 'passwordChange/error',
+          message: messages.errors.passwordFieldsRequired,
+        });
+        return;
+      }
+      if (form.next.length < PASSWORD_MIN_LENGTH) {
+        dispatch({
+          type: 'passwordChange/error',
+          message: messages.errors.passwordTooShort(PASSWORD_MIN_LENGTH),
+        });
+        return;
+      }
+      if (form.next !== form.confirm) {
+        dispatch({ type: 'passwordChange/error', message: messages.errors.passwordMismatch });
+        return;
+      }
+
+      dispatch({ type: 'passwordChange/busy', value: true });
+      try {
+        await endpoints.session.changePassword(form.current, form.next);
+        // Closing first clears the typed values; the session that made the
+        // change is the one the server kept, so we stay signed in.
+        dispatch({ type: 'passwordChange/close' });
+        toast(messages.passwordChanged);
+      } catch (error) {
+        if (error instanceof ApiError && !error.isAuthError) {
+          dispatch({ type: 'passwordChange/error', message: error.message });
+        } else {
+          dispatch({ type: 'passwordChange/close' });
+          fail(error);
+        }
       }
     },
 

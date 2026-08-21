@@ -72,6 +72,20 @@ export interface ConfirmState {
   busy: boolean;
 }
 
+/**
+ * The self-service password change dialog. Held only while it is open — the
+ * reducer drops the whole object on close so no password lingers in the store.
+ */
+export interface PasswordChangeState {
+  current: string;
+  next: string;
+  confirm: string;
+  error: string;
+  busy: boolean;
+}
+
+export type PasswordField = 'current' | 'next' | 'confirm';
+
 export interface Toast {
   id: number;
   message: string;
@@ -125,6 +139,9 @@ export interface AppState {
 
   /** A one-time password handed back by a reset, shown until dismissed. */
   revealedPassword: { userName: string; password: string } | null;
+
+  /** The password change dialog, `null` when closed. */
+  passwordChange: PasswordChangeState | null;
 }
 
 export interface DataPatch {
@@ -171,6 +188,11 @@ export type AppAction =
   | { type: 'settings/setDraft'; field: keyof SettingsDraft; value: string }
   | { type: 'settings/busy'; value: boolean }
   | { type: 'password/reveal'; userName: string; password: string }
-  | { type: 'password/hide' };
+  | { type: 'password/hide' }
+  | { type: 'passwordChange/open' }
+  | { type: 'passwordChange/close' }
+  | { type: 'passwordChange/setField'; field: PasswordField; value: string }
+  | { type: 'passwordChange/busy'; value: boolean }
+  | { type: 'passwordChange/error'; message: string };
 
 export type { PermissionKey, ProviderId, UserStatus };

@@ -24,9 +24,12 @@ export const loginSchema = z.object({
   password: z.string().min(1).max(200),
 });
 
+/** The one place the minimum is set. The web form enforces the same number. */
+export const PASSWORD_MIN_LENGTH = 12;
+
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1).max(200),
-  newPassword: z.string().min(12).max(200),
+  newPassword: z.string().min(PASSWORD_MIN_LENGTH).max(200),
 });
 
 /* ── Agents ───────────────────────────────────────────────────────────────── */

@@ -1,5 +1,5 @@
 import { changePasswordSchema, loginSchema, type SessionDto } from '@sothebys/domain';
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { hashPassword, verifyPassword } from '../crypto.js';
 import { prisma } from '../db.js';
 import {
@@ -8,6 +8,7 @@ import {
   effectivePermissions,
   issueSession,
   requireAuth,
+  SESSION_COOKIE,
 } from '../http/auth.js';
 import { badRequest, unauthorized } from '../http/errors.js';
 import { toRoleDto, toUserDto } from '../mappers.js';
@@ -25,6 +26,25 @@ export const sessionPayload = async (userId: number): Promise<SessionDto> => {
     role,
     permissions: effectivePermissions({ system: role.system, perms: role.perms }),
   };
+};
+
+/**
+ * Password changes are counted per account rather than per address: a shared
+ * office address must not lock a whole floor out, and one account must not be
+ * ground down from many addresses. The rate limiter runs before `requireAuth`,
+ * so the session is resolved here from the cookie rather than from `request.auth`.
+ */
+const passwordAttemptKey = async (request: FastifyRequest): Promise<string> => {
+  const raw = request.cookies[SESSION_COOKIE];
+  const unsigned = raw ? request.unsignCookie(raw) : null;
+  if (unsigned?.valid && unsigned.value) {
+    const session = await prisma.session.findUnique({
+      where: { id: unsigned.value },
+      select: { userId: true },
+    });
+    if (session) return `password:user:${session.userId}`;
+  }
+  return `password:ip:${request.ip}`;
 };
 
 export const authRoutes = async (app: FastifyInstance): Promise<void> => {
@@ -71,28 +91,35 @@ export const authRoutes = async (app: FastifyInstance): Promise<void> => {
     sessionPayload(authOf(request).userId),
   );
 
-  app.post('/auth/password', { preHandler: requireAuth }, async (request) => {
-    const { currentPassword, newPassword } = changePasswordSchema.parse(request.body);
-    const auth = authOf(request);
+  app.post(
+    '/auth/password',
+    {
+      preHandler: requireAuth,
+      config: { rateLimit: { max: 10, timeWindow: '5 minutes', keyGenerator: passwordAttemptKey } },
+    },
+    async (request) => {
+      const { currentPassword, newPassword } = changePasswordSchema.parse(request.body);
+      const auth = authOf(request);
 
-    const user = await prisma.user.findUniqueOrThrow({ where: { id: auth.userId } });
-    if (!user.passwordHash || !(await verifyPassword(currentPassword, user.passwordHash))) {
-      throw badRequest('A palavra-passe atual não está correta.');
-    }
-    if (currentPassword === newPassword) {
-      throw badRequest('A nova palavra-passe tem de ser diferente da atual.');
-    }
+      const user = await prisma.user.findUniqueOrThrow({ where: { id: auth.userId } });
+      if (!user.passwordHash || !(await verifyPassword(currentPassword, user.passwordHash))) {
+        throw badRequest('A palavra-passe atual não está correta.');
+      }
+      if (currentPassword === newPassword) {
+        throw badRequest('A nova palavra-passe tem de ser diferente da atual.');
+      }
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { passwordHash: await hashPassword(newPassword) },
-    });
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { passwordHash: await hashPassword(newPassword) },
+      });
 
-    // Every other session for this account is now stale.
-    await prisma.session.deleteMany({
-      where: { userId: user.id, id: { not: auth.sessionId } },
-    });
+      // Every other session for this account is now stale.
+      await prisma.session.deleteMany({
+        where: { userId: user.id, id: { not: auth.sessionId } },
+      });
 
-    return { ok: true };
-  });
+      return { ok: true };
+    },
+  );
 };

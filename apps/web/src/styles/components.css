@@ -658,6 +658,16 @@
   gap: 10px;
 }
 
+/* Holds its line whether or not there is a message, so the dialog does not
+   jump under the pointer as the user types. */
+.modal__problem {
+  min-height: 19px;
+  margin: -4px 0 16px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--danger);
+}
+
 /* ── Toasts ──────────────────────────────────────────────────────────────── */
 
 .toast-stack {

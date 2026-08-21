@@ -105,6 +105,13 @@ export const SignOutIcon = (props: IconProps) => (
   </svg>
 );
 
+export const KeyIcon = (props: IconProps) => (
+  <svg {...nav(props)}>
+    <circle cx="5.4" cy="10.6" r="2.9" />
+    <path d="M7.5 8.5 13.5 2.5M11.4 4.6 13 6.2M9.7 6.3 11.3 7.9" />
+  </svg>
+);
+
 export const DrawerCloseIcon = (props: IconProps) => (
   <svg
     width={16}
