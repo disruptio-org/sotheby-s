@@ -1,7 +1,7 @@
 import type {
   AgentDto,
   AgentInput,
-  InvitationPeekDto,
+  ClaimPeekDto,
   InviteResultDto,
   KnowledgeFileDto,
   ModelSpec,
@@ -84,9 +84,17 @@ export const endpoints = {
   },
 
   invitations: {
-    lookup: (token: string) => api.post<InvitationPeekDto>('/invitations/lookup', { token }),
+    lookup: (token: string) => api.post<ClaimPeekDto>('/invitations/lookup', { token }),
     redeem: (token: string, password: string) =>
       api.post<SessionDto>('/invitations/redeem', { token, password }),
+  },
+
+  passwordReset: {
+    /** Answers the same way for every address, so there is nothing to read. */
+    request: (email: string) => api.post<{ ok: true }>('/auth/password-reset', { email }),
+    lookup: (token: string) => api.post<ClaimPeekDto>('/auth/password-reset/lookup', { token }),
+    redeem: (token: string, password: string) =>
+      api.post<SessionDto>('/auth/password-reset/redeem', { token, password }),
   },
 
   roles: {

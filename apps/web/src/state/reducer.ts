@@ -72,7 +72,8 @@ export const createInitialState = (): AppState => ({
 
   revealedPassword: null,
   passwordChange: null,
-  invite: null,
+  claim: null,
+  forgot: null,
 });
 
 const withToast = (state: AppState, message: string, tone: Toast['tone'] = 'info'): AppState => {
@@ -209,7 +210,8 @@ export const reducer = (state: AppState, action: AppAction): AppState => {
         loginPassword: '',
         loginError: '',
         loginBusy: false,
-        invite: null,
+        claim: null,
+        forgot: null,
       };
 
     case 'session/signedOut':
@@ -388,17 +390,21 @@ export const reducer = (state: AppState, action: AppAction): AppState => {
           }
         : state;
 
-    // The invitation lives beside the session, not inside it: the person is
-    // not signed in yet, so `status` leaves 'anonymous' for a screen of its own.
-    case 'invite/open':
+    // A claim lives beside the session, not inside it: the person is not signed
+    // in yet, so `status` leaves 'anonymous' for a screen of its own. It wins
+    // over a session cookie, because whoever followed the link may be at a
+    // machine where somebody else is still signed in.
+    case 'claim/open':
       return {
         ...state,
-        status: 'invite',
-        invite: {
+        status: 'claim',
+        forgot: null,
+        claim: {
+          kind: action.kind,
           token: action.token,
           stage: 'checking',
           name: '',
-          roleName: '',
+          roleName: null,
           password: '',
           confirm: '',
           refusal: '',
@@ -407,12 +413,12 @@ export const reducer = (state: AppState, action: AppAction): AppState => {
         },
       };
 
-    case 'invite/ready':
-      return state.invite
+    case 'claim/ready':
+      return state.claim
         ? {
             ...state,
-            invite: {
-              ...state.invite,
+            claim: {
+              ...state.claim,
               stage: 'ready',
               name: action.name,
               roleName: action.roleName,
@@ -421,12 +427,12 @@ export const reducer = (state: AppState, action: AppAction): AppState => {
         : state;
 
     // A refused link drops the typed password with it — the form is gone.
-    case 'invite/refused':
-      return state.invite
+    case 'claim/refused':
+      return state.claim
         ? {
             ...state,
-            invite: {
-              ...state.invite,
+            claim: {
+              ...state.claim,
               stage: 'refused',
               refusal: action.message,
               password: '',
@@ -437,21 +443,37 @@ export const reducer = (state: AppState, action: AppAction): AppState => {
           }
         : state;
 
-    case 'invite/setField':
-      return state.invite
-        ? { ...state, invite: { ...state.invite, [action.field]: action.value, error: '' } }
+    case 'claim/setField':
+      return state.claim
+        ? { ...state, claim: { ...state.claim, [action.field]: action.value, error: '' } }
         : state;
 
-    case 'invite/busy':
-      return state.invite ? { ...state, invite: { ...state.invite, busy: action.value } } : state;
+    case 'claim/busy':
+      return state.claim ? { ...state, claim: { ...state.claim, busy: action.value } } : state;
 
-    case 'invite/error':
-      return state.invite
-        ? { ...state, invite: { ...state.invite, error: action.message, busy: false } }
+    case 'claim/error':
+      return state.claim
+        ? { ...state, claim: { ...state.claim, error: action.message, busy: false } }
         : state;
 
-    case 'invite/dismiss':
-      return { ...state, status: 'anonymous', invite: null };
+    case 'claim/dismiss':
+      return { ...state, status: 'anonymous', claim: null };
+
+    case 'forgot/open':
+      return { ...state, forgot: { email: state.loginEmail, busy: false, sent: false } };
+
+    case 'forgot/close':
+      return { ...state, forgot: null };
+
+    case 'forgot/setEmail':
+      return state.forgot ? { ...state, forgot: { ...state.forgot, email: action.value } } : state;
+
+    case 'forgot/busy':
+      return state.forgot ? { ...state, forgot: { ...state.forgot, busy: action.value } } : state;
+
+    // There is only one answer, so there is only one thing to show.
+    case 'forgot/sent':
+      return state.forgot ? { ...state, forgot: { ...state.forgot, busy: false, sent: true } } : state;
   }
 };
 

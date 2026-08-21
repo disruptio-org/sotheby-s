@@ -1,14 +1,8 @@
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { prisma } from './db.js';
 import { env } from './env.js';
 import { invitationMail } from './mail/invitation.js';
 import { sendMail } from './mail/transport.js';
-
-/** 256 bits from the platform CSPRNG, URL-safe so it survives an e-mail client. */
-const newToken = (): string => randomBytes(32).toString('base64url');
-
-const hashToken = (token: string): string =>
-  createHash('sha256').update(token, 'utf8').digest('hex');
+import { hashToken, newToken, sameDigest } from './tokens.js';
 
 export interface IssuedInvitation {
   expiresAt: Date;
@@ -88,19 +82,15 @@ export const resolveInvitation = async (token: string): Promise<InvitationLookup
     include: { user: { include: { role: { select: { name: true } } } } },
   });
 
-  // The lookup is by digest, so the secret is never the thing being compared.
-  // The explicit check keeps that property honest if the query ever changes —
-  // both operands are a SHA-256, so the lengths always match.
-  if (!row || !timingSafeEqual(Buffer.from(row.tokenHash, 'hex'), Buffer.from(digest, 'hex'))) {
-    return { ok: false, reason: 'invalid' };
-  }
+  if (!row || !sameDigest(row.tokenHash, digest)) return { ok: false, reason: 'invalid' };
   if (row.usedAt) return { ok: false, reason: 'used' };
   if (row.expiresAt.getTime() < Date.now()) return { ok: false, reason: 'expired' };
 
-  // Suspending an account has to stop a link already in somebody's inbox, or
-  // the invitation becomes a way back in. The refusal says no more than that
-  // the link is no good; the state of the account is not the invitee's business.
-  if (row.user.status === 'SUSPENDED') return { ok: false, reason: 'invalid' };
+  // An account that has left the invited state has no business being claimed by
+  // a link: it was suspended, or its owner already set a password some other
+  // way. The refusal says no more than that the link is no good — the state of
+  // the account is not the link holder's business.
+  if (row.user.status !== 'INVITED') return { ok: false, reason: 'invalid' };
 
   return {
     ok: true,

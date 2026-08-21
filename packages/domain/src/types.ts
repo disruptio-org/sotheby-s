@@ -62,17 +62,27 @@ export interface InvitationDto {
   expired: boolean;
 }
 
+/** The two ways a person arrives at the set-password page without a session. */
+export type ClaimKind = 'invite' | 'reset';
+
 /**
- * All a set-password page is told about the person redeeming a link: their own
- * name and the profile waiting for them. Never the e-mail, never anyone else.
+ * All the set-password page is told about the person holding a link: their own
+ * name, and — for an invitation — the profile waiting for them. Never the
+ * e-mail address, never anything about anybody else.
  */
-export interface InvitationPeekDto {
+export interface ClaimPeekDto {
   name: string;
-  roleName: string;
+  roleName: string | null;
 }
 
 /** Why a link was refused, so the page can explain itself and offer a way out. */
-export type InvitationRefusalCode = 'invitation_invalid' | 'invitation_expired' | 'invitation_used';
+export type ClaimRefusalCode =
+  | 'invitation_invalid'
+  | 'invitation_expired'
+  | 'invitation_used'
+  | 'reset_invalid'
+  | 'reset_expired'
+  | 'reset_used';
 
 export interface UserDto {
   id: number;

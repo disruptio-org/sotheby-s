@@ -1,8 +1,4 @@
-import {
-  invitationRedeemSchema,
-  invitationTokenSchema,
-  type InvitationPeekDto,
-} from '@sothebys/domain';
+import { claimPasswordSchema, claimTokenSchema, type ClaimPeekDto } from '@sothebys/domain';
 import type { FastifyInstance } from 'fastify';
 import { hashPassword } from '../crypto.js';
 import { prisma } from '../db.js';
@@ -48,7 +44,7 @@ export const invitationRoutes = async (app: FastifyInstance): Promise<void> => {
     '/invitations/lookup',
     { config: { rateLimit: { max: 20, timeWindow: '5 minutes' } } },
     async (request) => {
-      const { token } = invitationTokenSchema.parse(request.body);
+      const { token } = claimTokenSchema.parse(request.body);
 
       const found = await resolveInvitation(token);
       if (!found.ok) throw refuse(found.reason);
@@ -58,7 +54,7 @@ export const invitationRoutes = async (app: FastifyInstance): Promise<void> => {
       return {
         name: found.invitation.name,
         roleName: found.invitation.roleName,
-      } satisfies InvitationPeekDto;
+      } satisfies ClaimPeekDto;
     },
   );
 
@@ -66,7 +62,7 @@ export const invitationRoutes = async (app: FastifyInstance): Promise<void> => {
     '/invitations/redeem',
     { config: { rateLimit: { max: 10, timeWindow: '5 minutes' } } },
     async (request, reply) => {
-      const { token, password } = invitationRedeemSchema.parse(request.body);
+      const { token, password } = claimPasswordSchema.parse(request.body);
 
       const found = await resolveInvitation(token);
       if (!found.ok) throw refuse(found.reason);

@@ -73,6 +73,8 @@ Then edit `apps/api/.env`:
 | `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` | TLS and credentials, for a real relay. |
 | `MAIL_FROM` | The From address on invitations. |
 | `INVITE_TTL_HOURS` | How long an invitation link stays good. 72 by default. |
+| `RESET_TTL_MINUTES` | How long a password reset link stays good. 60 by default. |
+| `RESET_MAX_PER_ACCOUNT` / `RESET_MAX_PER_IP` | Reset requests allowed per hour, per account and per source address. |
 | `SEED_PASSWORD` | Password given to the seeded users. |
 
 Generate the two secrets:
@@ -130,6 +132,15 @@ Creating a user on the Utilizadores screen sends them an invitation. Open
 that signs the new account in and marks it active. The link is single-use, good
 for `INVITE_TTL_HOURS`, and **Reenviar convite** retires whatever link went out
 before it. No password is ever shown to the administrator.
+
+## Forgotten passwords
+
+**Esqueci-me da palavra-passe** on the sign-in screen mails a reset link, good
+for 60 minutes and for one use. The screen says the same thing for every address
+it is given, so it cannot be used to find out who has an account here; the link
+goes out only for an account that exists and is not suspended, at most
+`RESET_MAX_PER_ACCOUNT` times an hour. Completing a reset ends every other
+session that account had open.
 
 ## Running workflows for real
 

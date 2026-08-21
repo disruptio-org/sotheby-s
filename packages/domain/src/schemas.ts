@@ -32,19 +32,28 @@ export const changePasswordSchema = z.object({
   newPassword: z.string().min(PASSWORD_MIN_LENGTH).max(200),
 });
 
-/* ── Invitations ──────────────────────────────────────────────────────────── */
+/* ── Invitations and password resets ──────────────────────────────────────── */
 
 /**
  * The token travels in the body, never in a path or a query, so it cannot end
  * up in an access log or a `Referer` header on the way to the server.
  */
-export const invitationTokenSchema = z.object({
+export const claimTokenSchema = z.object({
   token: z.string().min(1).max(400),
 });
 
-export const invitationRedeemSchema = z.object({
+export const claimPasswordSchema = z.object({
   token: z.string().min(1).max(400),
   password: z.string().min(PASSWORD_MIN_LENGTH).max(200),
+});
+
+/**
+ * Deliberately lax about what an e-mail address looks like: the answer is the
+ * same either way, so rejecting a malformed one would be a way to learn that
+ * the platform bothered to look.
+ */
+export const passwordResetRequestSchema = z.object({
+  email: z.string().min(1).max(200),
 });
 
 /* ── Agents ───────────────────────────────────────────────────────────────── */

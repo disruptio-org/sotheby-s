@@ -46,6 +46,15 @@ const schema = z.object({
 
   /** How long an invitation link stays redeemable. */
   INVITE_TTL_HOURS: z.coerce.number().int().min(1).max(720).default(72),
+
+  /** How long a password reset link stays redeemable. Deliberately short. */
+  RESET_TTL_MINUTES: z.coerce.number().int().min(5).max(1440).default(60),
+
+  /** Resets one account may ask for in an hour, before the mail stops going. */
+  RESET_MAX_PER_ACCOUNT: z.coerce.number().int().min(1).max(50).default(3),
+
+  /** Reset requests one source address may make in an hour. */
+  RESET_MAX_PER_IP: z.coerce.number().int().min(1).max(500).default(10),
 });
 
 const parsed = schema.safeParse(process.env);

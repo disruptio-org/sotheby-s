@@ -27,22 +27,40 @@ enum UserStatus {
 }
 
 model User {
-  id           Int        @id @default(autoincrement())
-  name         String
-  email        String     @unique
+  id             Int             @id @default(autoincrement())
+  name           String
+  email          String          @unique
   /// Null until the invitee sets a password.
-  passwordHash String?
-  roleId       Int
-  role         Role       @relation(fields: [roleId], references: [id], onDelete: Restrict)
-  status       UserStatus @default(INVITED)
-  lastLoginAt  DateTime?
-  sessions     Session[]
-  invitations  Invitation[]
-  runs         Run[]
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  passwordHash   String?
+  roleId         Int
+  role           Role            @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  status         UserStatus      @default(INVITED)
+  lastLoginAt    DateTime?
+  sessions       Session[]
+  invitations    Invitation[]
+  passwordResets PasswordReset[]
+  runs           Run[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
   @@index([roleId])
+}
+
+/// A password the owner asked to replace, keyed by a hash of the link's token.
+/// Rows are kept for the throttling window rather than deleted, so a burst of
+/// requests can be counted without asking whether the account exists.
+model PasswordReset {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  /// Set the moment the link is redeemed. A second click is refused by this.
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 /// Server-side sessions: the cookie carries only this opaque id, so revoking

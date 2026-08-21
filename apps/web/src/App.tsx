@@ -9,7 +9,7 @@ import { Sidebar } from './components/Sidebar';
 import { Toasts } from './components/Toasts';
 import { AgentsScreen } from './screens/AgentsScreen';
 import { AppsScreen } from './screens/AppsScreen';
-import { InviteScreen } from './screens/InviteScreen';
+import { ClaimScreen } from './screens/ClaimScreen';
 import { LoginScreen } from './screens/LoginScreen';
 import { RolesScreen } from './screens/RolesScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
@@ -66,8 +66,8 @@ export function App() {
             </div>
           </main>
         </div>
-      ) : status === 'invite' ? (
-        <InviteScreen />
+      ) : status === 'claim' ? (
+        <ClaimScreen />
       ) : (
         <LoginScreen />
       )}

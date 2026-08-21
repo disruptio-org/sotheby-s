@@ -11,7 +11,7 @@ import {
 import type { Dispatch, MutableRefObject } from 'react';
 import { ApiError, errorMessage } from '../api/client';
 import { endpoints } from '../api/endpoints';
-import { takeInviteToken } from '../utils/invite';
+import { takeClaim } from '../utils/claim';
 import { messages } from './messages';
 import type { AppAction, AppState, DataPatch } from './types';
 
@@ -100,21 +100,24 @@ export const makeActions = (dispatch: Send, read: Read) => {
 
     /**
      * A token in the address bar takes precedence over the session cookie: the
-     * person following an invitation link may well be at a shared machine where
-     * somebody else is still signed in, and they are entitled to their own
-     * account, not to whatever session happens to be open.
+     * person following an invitation or a reset link may well be at a shared
+     * machine where somebody else is still signed in, and they are entitled to
+     * their own account, not to whatever session happens to be open.
      */
     bootstrap: async (): Promise<void> => {
-      if (read.current.status === 'invite') return;
+      if (read.current.status === 'claim') return;
 
-      const token = takeInviteToken();
-      if (token) {
-        dispatch({ type: 'invite/open', token });
+      const claim = takeClaim();
+      if (claim) {
+        dispatch({ type: 'claim/open', kind: claim.kind, token: claim.token });
         try {
-          const peek = await endpoints.invitations.lookup(token);
-          dispatch({ type: 'invite/ready', name: peek.name, roleName: peek.roleName });
+          const peek =
+            claim.kind === 'invite'
+              ? await endpoints.invitations.lookup(claim.token)
+              : await endpoints.passwordReset.lookup(claim.token);
+          dispatch({ type: 'claim/ready', name: peek.name, roleName: peek.roleName });
         } catch (error) {
-          dispatch({ type: 'invite/refused', message: errorMessage(error) });
+          dispatch({ type: 'claim/refused', message: errorMessage(error) });
         }
         return;
       }
@@ -130,46 +133,70 @@ export const makeActions = (dispatch: Send, read: Read) => {
     },
 
     /**
-     * Sets the password on an invited account and signs the person in with it.
-     * The same three checks as the change-password form run first; the server
-     * repeats them, and is the only authority on whether the link is still good.
+     * Sets the password the link entitles its holder to set, and signs them in
+     * with it. The same three checks as the change-password form run first; the
+     * server repeats them, and is the only authority on whether the link is
+     * still good.
      */
-    redeemInvitation: async (): Promise<void> => {
-      const invite = read.current.invite;
-      if (!invite || invite.busy || invite.stage !== 'ready') return;
+    redeemClaim: async (): Promise<void> => {
+      const claim = read.current.claim;
+      if (!claim || claim.busy || claim.stage !== 'ready') return;
 
-      if (!invite.password || !invite.confirm) {
-        dispatch({ type: 'invite/error', message: messages.errors.passwordFieldsRequired });
+      if (!claim.password || !claim.confirm) {
+        dispatch({ type: 'claim/error', message: messages.errors.passwordFieldsRequired });
         return;
       }
-      if (invite.password.length < PASSWORD_MIN_LENGTH) {
+      if (claim.password.length < PASSWORD_MIN_LENGTH) {
         dispatch({
-          type: 'invite/error',
+          type: 'claim/error',
           message: messages.errors.passwordTooShort(PASSWORD_MIN_LENGTH),
         });
         return;
       }
-      if (invite.password !== invite.confirm) {
-        dispatch({ type: 'invite/error', message: messages.errors.passwordMismatch });
+      if (claim.password !== claim.confirm) {
+        dispatch({ type: 'claim/error', message: messages.errors.passwordMismatch });
         return;
       }
 
-      dispatch({ type: 'invite/busy', value: true });
+      dispatch({ type: 'claim/busy', value: true });
       try {
-        const session = await endpoints.invitations.redeem(invite.token, invite.password);
-        // 'boot/ready' drops the invite slice, and the typed password with it.
+        const session =
+          claim.kind === 'invite'
+            ? await endpoints.invitations.redeem(claim.token, claim.password)
+            : await endpoints.passwordReset.redeem(claim.token, claim.password);
+        // 'boot/ready' drops the claim slice, and the typed password with it.
         dispatch({ type: 'boot/ready', session });
-        toast(messages.inviteAccepted);
+        toast(claim.kind === 'invite' ? messages.inviteAccepted : messages.passwordChanged);
         await loadEverything();
       } catch (error) {
         // A refusal of the link itself replaces the form; anything else is a
         // problem with what was typed and leaves it in place.
         if (error instanceof ApiError && error.status === 410) {
-          dispatch({ type: 'invite/refused', message: error.message });
+          dispatch({ type: 'claim/refused', message: error.message });
         } else {
-          dispatch({ type: 'invite/error', message: errorMessage(error) });
+          dispatch({ type: 'claim/error', message: errorMessage(error) });
         }
       }
+    },
+
+    /**
+     * Asks for a reset link. There is nothing to report back: the server answers
+     * the same way for an address it knows and one it does not, and so does this.
+     * Even a network fault shows the same line, rather than becoming the one
+     * response that tells an attacker something.
+     */
+    requestPasswordReset: async (): Promise<void> => {
+      const forgot = read.current.forgot;
+      if (!forgot || forgot.busy || forgot.sent) return;
+      if (!forgot.email.trim()) return;
+
+      dispatch({ type: 'forgot/busy', value: true });
+      try {
+        await endpoints.passwordReset.request(forgot.email.trim());
+      } catch {
+        // Deliberately swallowed. See above.
+      }
+      dispatch({ type: 'forgot/sent' });
     },
 
     signIn: async (): Promise<void> => {

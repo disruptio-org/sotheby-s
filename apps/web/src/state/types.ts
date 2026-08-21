@@ -1,5 +1,6 @@
 import type {
   AgentDto,
+  ClaimKind,
   PermissionKey,
   ProviderId,
   RoleDto,
@@ -15,7 +16,7 @@ import type {
 } from '@sothebys/domain';
 import type { CatalogDto } from '../api/endpoints';
 
-export type BootStatus = 'booting' | 'anonymous' | 'invite' | 'ready';
+export type BootStatus = 'booting' | 'anonymous' | 'claim' | 'ready';
 
 export type DrawerKind = 'agent' | 'skill' | 'user' | 'workflow' | 'role';
 
@@ -88,15 +89,18 @@ export interface PasswordChangeState {
 export type PasswordField = 'current' | 'next' | 'confirm';
 
 /**
- * The invitation screen, reached by following the link in the e-mail. It lives
- * outside the session entirely: nobody is signed in while it is on screen.
+ * The set-password screen, reached by following a link in an e-mail — either an
+ * invitation or a password reset. It lives outside the session entirely: nobody
+ * is signed in while it is on screen.
  */
-export interface InviteState {
+export interface ClaimState {
+  kind: ClaimKind;
   /** Held in memory only — the reducer never puts it back in the address bar. */
   token: string;
-  stage: InviteStage;
+  stage: ClaimStage;
   name: string;
-  roleName: string;
+  /** The profile waiting for an invitee. Null on a reset, which grants nothing. */
+  roleName: string | null;
   password: string;
   confirm: string;
   /** Why the link itself is no good. Set only in the `refused` stage. */
@@ -106,9 +110,19 @@ export interface InviteState {
   busy: boolean;
 }
 
-export type InviteStage = 'checking' | 'ready' | 'refused';
+export type ClaimStage = 'checking' | 'ready' | 'refused';
 
-export type InviteField = 'password' | 'confirm';
+export type ClaimField = 'password' | 'confirm';
+
+/**
+ * Asking for a reset link. `sent` is set on any answer at all, because the
+ * server's answer is the same whether or not the address holds an account.
+ */
+export interface ForgotState {
+  email: string;
+  busy: boolean;
+  sent: boolean;
+}
 
 export interface Toast {
   id: number;
@@ -131,6 +145,9 @@ export interface AppState {
   loginPassword: string;
   loginError: string;
   loginBusy: boolean;
+
+  /** The forgotten-password form, `null` unless the sign-in screen opened it. */
+  forgot: ForgotState | null;
 
   section: SectionId;
   navOpen: boolean;
@@ -167,8 +184,8 @@ export interface AppState {
   /** The password change dialog, `null` when closed. */
   passwordChange: PasswordChangeState | null;
 
-  /** The invitation being accepted, `null` unless the boot found a token. */
-  invite: InviteState | null;
+  /** The link being redeemed, `null` unless the boot found a token. */
+  claim: ClaimState | null;
 }
 
 export interface DataPatch {
@@ -221,12 +238,17 @@ export type AppAction =
   | { type: 'passwordChange/setField'; field: PasswordField; value: string }
   | { type: 'passwordChange/busy'; value: boolean }
   | { type: 'passwordChange/error'; message: string }
-  | { type: 'invite/open'; token: string }
-  | { type: 'invite/ready'; name: string; roleName: string }
-  | { type: 'invite/refused'; message: string }
-  | { type: 'invite/setField'; field: InviteField; value: string }
-  | { type: 'invite/busy'; value: boolean }
-  | { type: 'invite/error'; message: string }
-  | { type: 'invite/dismiss' };
+  | { type: 'claim/open'; kind: ClaimKind; token: string }
+  | { type: 'claim/ready'; name: string; roleName: string | null }
+  | { type: 'claim/refused'; message: string }
+  | { type: 'claim/setField'; field: ClaimField; value: string }
+  | { type: 'claim/busy'; value: boolean }
+  | { type: 'claim/error'; message: string }
+  | { type: 'claim/dismiss' }
+  | { type: 'forgot/open' }
+  | { type: 'forgot/close' }
+  | { type: 'forgot/setEmail'; value: string }
+  | { type: 'forgot/busy'; value: boolean }
+  | { type: 'forgot/sent' };
 
 export type { PermissionKey, ProviderId, UserStatus };
